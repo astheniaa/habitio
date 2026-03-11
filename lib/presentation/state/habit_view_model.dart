@@ -8,12 +8,19 @@ import '../../domain/repositories/habit_repository.dart';
 import '../../domain/usecases/compute_weekly_stats.dart';
 import '../../domain/usecases/filter_habits_for_date.dart';
 import '../../domain/utils/time_utils.dart';
+import 'user_view_model.dart';
+
+const int _xpPerCompletion = 30;
 
 class HabitViewModel extends ChangeNotifier {
   final HabitRepository _habitRepository;
   final HabitCompletionRepository _completionRepository;
   final FilterHabitsForDateUseCase _filterHabits;
   final ComputeWeeklyStatsUseCase _computeWeeklyStats;
+  UserViewModel? _userViewModel;
+
+  // ignore: avoid_setters_without_getters
+  set userViewModel(UserViewModel? vm) => _userViewModel = vm;
 
   List<Habit> _habits = [];
   List<HabitCompletion> _completions = [];
@@ -72,6 +79,7 @@ class HabitViewModel extends ChangeNotifier {
       );
       await _completionRepository.insertCompletion(completion);
       _completions = await _completionRepository.getAllCompletions();
+      await _userViewModel?.awardXp(_xpPerCompletion);
     }
     notifyListeners();
   }

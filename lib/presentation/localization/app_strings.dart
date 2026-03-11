@@ -14,7 +14,7 @@ class AppStrings {
   static const String specializationLabel = 'Специализация';
   static const String scheduleLabel = 'Расписание';
   static const String everyDay = 'Каждый день';
-  static const String specificDays = 'Определённые дни';
+  static const String specificDays = 'Выбрать дни';
   static const String save = 'Сохранить';
   static const String delete = 'Удалить';
   static const String cancel = 'Отмена';
@@ -26,4 +26,6 @@ class AppStrings {
   static const String finance = 'Финансы';
   static const String social = 'Социализация';
   static const String processing = 'Процессинг';
+  static const String levelUpBadge = '⬆ LEVEL UP';
+  static const String levelUpSub = '+1 уровень';
 }

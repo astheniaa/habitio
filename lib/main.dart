@@ -40,11 +40,15 @@ class HabitRpgApp extends StatelessWidget {
             userRepository: UserRepositoryImpl(),
           )..loadUser(),
         ),
-        ChangeNotifierProvider(
+        ChangeNotifierProxyProvider<UserViewModel, HabitViewModel>(
           create: (_) => HabitViewModel(
             habitRepository: HabitRepositoryImpl(),
             completionRepository: HabitCompletionRepositoryImpl(),
           )..loadInitialData(),
+          update: (_, userVm, habitVm) {
+            habitVm!.userViewModel = userVm;
+            return habitVm;
+          },
         ),
       ],
       child: MaterialApp(
