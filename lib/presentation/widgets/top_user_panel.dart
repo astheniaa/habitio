@@ -1,11 +1,14 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/models/entities/user.dart';
 import '../localization/app_strings.dart';
 import '../state/user_view_model.dart';
+import 'avatar_picker_sheet.dart';
 
 class TopUserPanel extends StatefulWidget {
   const TopUserPanel({super.key});
@@ -18,11 +21,9 @@ class _TopUserPanelState extends State<TopUserPanel>
     with SingleTickerProviderStateMixin {
   late final AnimationController _ctrl;
 
-  // Current animated values (updated each frame via addListener)
   Animation<double> _barAnim = const AlwaysStoppedAnimation(0);
   Animation<int> _xpNumAnim = const AlwaysStoppedAnimation(0);
 
-  // What the level text and XP denominator display
   int _displayLevel = 1;
   int _displayDenom = 100;
 
@@ -31,6 +32,8 @@ class _TopUserPanelState extends State<TopUserPanel>
   bool _levelUpInProgress = false;
   OverlayEntry? _overlayEntry;
   Completer<void>? _overlayCompleter;
+
+  static const _green = Color(0xFF4CAF50);
 
   @override
   void initState() {
@@ -115,7 +118,6 @@ class _TopUserPanelState extends State<TopUserPanel>
   void _runLevelUpSequence(User user, int newLevel) async {
     _levelUpInProgress = true;
     try {
-      // ── Step 1: fill bar to 100 % (600 ms) ──────────────────────────────
       final fromBar = _barAnim.value;
       final fromXp = _xpNumAnim.value;
       final fillDenom = _displayDenom;
@@ -123,18 +125,15 @@ class _TopUserPanelState extends State<TopUserPanel>
       _ctrl.stop();
       _ctrl.duration = const Duration(milliseconds: 600);
       final curved1 = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-      _barAnim =
-          Tween<double>(begin: fromBar, end: 1.0).animate(curved1);
+      _barAnim = Tween<double>(begin: fromBar, end: 1.0).animate(curved1);
       _xpNumAnim =
           IntTween(begin: fromXp, end: fillDenom).animate(curved1);
       await _ctrl.forward(from: 0).orCancel;
       if (!mounted) return;
 
-      // ── Step 2: show overlay, wait up to 2.5 s or user tap ───────────────
       _overlayCompleter = Completer<void>();
       _showLevelUpOverlay(newLevel);
 
-      // auto-dismiss timer
       Future.delayed(const Duration(milliseconds: 2500), () {
         if (!(_overlayCompleter?.isCompleted ?? true)) {
           _overlayCompleter!.complete();
@@ -145,11 +144,9 @@ class _TopUserPanelState extends State<TopUserPanel>
       _dismissLevelUpOverlay();
       if (!mounted) return;
 
-      // brief pause for overlay fade-out
       await Future.delayed(const Duration(milliseconds: 200));
       if (!mounted) return;
 
-      // ── Step 3: update level text, reset bar instantly ────────────────────
       setState(() {
         _displayLevel = newLevel;
         _displayDenom = user.xpToNextLevel;
@@ -165,17 +162,14 @@ class _TopUserPanelState extends State<TopUserPanel>
       _ctrl.value = 0;
       setState(() {});
 
-      // ── Step 4: animate bar to new value (800 ms) ─────────────────────────
       _ctrl.stop();
       _ctrl.duration = const Duration(milliseconds: 800);
       final curved4 = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
-      _barAnim =
-          Tween<double>(begin: 0.0, end: toBar).animate(curved4);
+      _barAnim = Tween<double>(begin: 0.0, end: toBar).animate(curved4);
       _xpNumAnim =
           IntTween(begin: 0, end: user.currentXp).animate(curved4);
       _ctrl.forward(from: 0);
     } on TickerCanceled {
-      // widget disposed mid-animation – clean up overlay if needed
       _dismissLevelUpOverlay();
     } finally {
       _levelUpInProgress = false;
@@ -200,7 +194,7 @@ class _TopUserPanelState extends State<TopUserPanel>
                 const Text(
                   AppStrings.levelUpBadge,
                   style: TextStyle(
-                    color: Color(0xFF4CAF50),
+                    color: _green,
                     fontSize: 14,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.5,
@@ -235,43 +229,199 @@ class _TopUserPanelState extends State<TopUserPanel>
     entry?.remove();
   }
 
+  // ── Gesture handlers ──────────────────────────────────────────────────────
+
+  void _onAvatarTap() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: const Color(0xFF1E1E1E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+      ),
+      builder: (_) => const AvatarPickerSheet(),
+    );
+  }
+
+  void _onNameLongPress() {
+    HapticFeedback.mediumImpact();
+    final vm = context.read<UserViewModel>();
+    final currentName = vm.user?.name ?? '';
+    final controller = TextEditingController(text: currentName);
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text(AppStrings.editNameTitle),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          maxLength: 20,
+          decoration: const InputDecoration(
+            hintText: AppStrings.editNameHint,
+            border: OutlineInputBorder(),
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text(AppStrings.cancel),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              final name = controller.text.trim();
+              if (name.isEmpty) return;
+              vm.updateName(name);
+              Navigator.of(ctx).pop();
+            },
+            child: const Text(AppStrings.save),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ── Avatar widget ──────────────────────────────────────────────────────────
+
+  Widget _buildAvatarContent(User? user) {
+    final name = user?.name ?? '';
+    final avatarPath = user?.avatarPath;
+    final avatarRpgId = user?.avatarRpgId;
+
+    if (avatarPath != null && avatarPath.isNotEmpty) {
+      return Image.file(
+        File(avatarPath),
+        fit: BoxFit.cover,
+        width: 48,
+        height: 48,
+        errorBuilder: (_, __, ___) => _buildInitialAvatar(name),
+      );
+    } else if (avatarRpgId != null && avatarRpgId.isNotEmpty) {
+      return Container(
+        color: const Color(0xFF1E1E1E),
+        alignment: Alignment.center,
+        child: Text(avatarRpgId, style: const TextStyle(fontSize: 24)),
+      );
+    } else {
+      return _buildInitialAvatar(name);
+    }
+  }
+
+  Widget _buildInitialAvatar(String name) {
+    final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
+    return Container(
+      color: _green.withValues(alpha: 0.2),
+      alignment: Alignment.center,
+      child: Text(
+        initial,
+        style: const TextStyle(
+          color: _green,
+          fontSize: 20,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  // ── Build ──────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<UserViewModel>();
 
     if (vm.isLoading && _prevUser == null) {
-      return const LinearProgressIndicator();
+      return const SizedBox(
+        height: 72,
+        child: Center(child: LinearProgressIndicator()),
+      );
     }
+
+    final user = vm.user ?? _prevUser;
+    final name = user?.name ?? '';
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Text(
-            vm.user?.name ?? _prevUser?.name ?? '',
-            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-          ),
-          const SizedBox(height: 2),
-          AnimatedSwitcher(
-            duration: const Duration(milliseconds: 200),
-            transitionBuilder: (child, anim) =>
-                FadeTransition(opacity: anim, child: child),
-            child: Text(
-              '${AppStrings.level} $_displayLevel',
-              key: ValueKey(_displayLevel),
+          // ── Avatar ──────────────────────────────────────────────────────
+          GestureDetector(
+            onTap: _onAvatarTap,
+            child: Container(
+              width: 48,
+              height: 48,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: _green, width: 2),
+              ),
+              child: ClipOval(child: _buildAvatarContent(user)),
             ),
           ),
-          const SizedBox(height: 6),
-          LinearProgressIndicator(
-            value: _barAnim.value.clamp(0.0, 1.0),
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(4),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            '${_xpNumAnim.value} / $_displayDenom ${AppStrings.xp}',
-            style: Theme.of(context).textTheme.bodySmall,
+          const SizedBox(width: 12),
+          // ── Right column ─────────────────────────────────────────────────
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Name + level badge
+                Row(
+                  children: [
+                    Flexible(
+                      child: GestureDetector(
+                        onLongPress: _onNameLongPress,
+                        child: Text(
+                          name,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
+                      transitionBuilder: (child, anim) =>
+                          FadeTransition(opacity: anim, child: child),
+                      child: Container(
+                        key: ValueKey(_displayLevel),
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 8, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _green.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          'Lvl $_displayLevel',
+                          style: const TextStyle(
+                            color: _green,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                // XP bar
+                LinearProgressIndicator(
+                  value: _barAnim.value.clamp(0.0, 1.0),
+                  minHeight: 6,
+                  borderRadius: BorderRadius.circular(3),
+                  backgroundColor: Colors.white.withValues(alpha: 0.1),
+                  valueColor: const AlwaysStoppedAnimation(_green),
+                ),
+                const SizedBox(height: 2),
+                // XP text
+                Text(
+                  '${_xpNumAnim.value} / $_displayDenom ${AppStrings.xp}',
+                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                ),
+              ],
+            ),
           ),
         ],
       ),

@@ -28,4 +28,17 @@ class AppStrings {
   static const String processing = 'Процессинг';
   static const String levelUpBadge = '⬆ LEVEL UP';
   static const String levelUpSub = '+1 уровень';
+  // Navigation
+  static const String todayTab = 'Сегодня';
+  static const String upcomingTab = 'Предстоящее';
+  // Empty states
+  static const String emptyUpcoming = 'Нет запланированных привычек';
+  // Avatar & name editing
+  static const String editNameTitle = 'Изменить имя';
+  static const String editNameHint = 'Введите имя';
+  static const String editNameValidation = 'Имя не может быть пустым';
+  static const String fromGallery = 'Из галереи';
+  static const String choosePhoto = 'Выбрать фото';
+  static const String rpgAvatarsTitle = 'RPG-аватары';
+  static const String avatarPickerTitle = 'Выбрать аватар';
 }

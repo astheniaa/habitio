@@ -19,9 +19,19 @@ class AppDatabase {
 
     return await openDatabase(
       dbPath,
-      version: 1,
+      version: 2,
       onCreate: _onCreate,
+      onUpgrade: _onUpgrade,
     );
+  }
+
+  Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
+    if (oldVersion < 2) {
+      await db.execute(
+          'ALTER TABLE users ADD COLUMN avatar_path TEXT');
+      await db.execute(
+          'ALTER TABLE users ADD COLUMN avatar_rpg_id TEXT');
+    }
   }
 
   Future<void> _onCreate(Database db, int version) async {
@@ -31,7 +41,9 @@ class AppDatabase {
         name TEXT NOT NULL,
         level INTEGER NOT NULL,
         current_xp INTEGER NOT NULL,
-        xp_to_next_level INTEGER NOT NULL
+        xp_to_next_level INTEGER NOT NULL,
+        avatar_path TEXT,
+        avatar_rpg_id TEXT
       )
     ''');
 

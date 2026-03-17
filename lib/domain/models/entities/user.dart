@@ -4,6 +4,8 @@ class User {
   final int level;
   final int currentXp;
   final int xpToNextLevel;
+  final String? avatarPath;
+  final String? avatarRpgId;
 
   const User({
     required this.id,
@@ -11,6 +13,8 @@ class User {
     required this.level,
     required this.currentXp,
     required this.xpToNextLevel,
+    this.avatarPath,
+    this.avatarRpgId,
   });
 
   User copyWith({
@@ -19,6 +23,10 @@ class User {
     int? level,
     int? currentXp,
     int? xpToNextLevel,
+    String? avatarPath,
+    String? avatarRpgId,
+    bool clearAvatarPath = false,
+    bool clearAvatarRpgId = false,
   }) {
     return User(
       id: id ?? this.id,
@@ -26,6 +34,9 @@ class User {
       level: level ?? this.level,
       currentXp: currentXp ?? this.currentXp,
       xpToNextLevel: xpToNextLevel ?? this.xpToNextLevel,
+      avatarPath: clearAvatarPath ? null : (avatarPath ?? this.avatarPath),
+      avatarRpgId:
+          clearAvatarRpgId ? null : (avatarRpgId ?? this.avatarRpgId),
     );
   }
 
@@ -36,6 +47,8 @@ class User {
       'level': level,
       'current_xp': currentXp,
       'xp_to_next_level': xpToNextLevel,
+      'avatar_path': avatarPath,
+      'avatar_rpg_id': avatarRpgId,
     };
   }
 
@@ -46,6 +59,8 @@ class User {
       level: map['level'] as int,
       currentXp: map['current_xp'] as int,
       xpToNextLevel: map['xp_to_next_level'] as int,
+      avatarPath: map['avatar_path'] as String?,
+      avatarRpgId: map['avatar_rpg_id'] as String?,
     );
   }
 

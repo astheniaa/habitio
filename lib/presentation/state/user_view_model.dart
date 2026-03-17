@@ -35,6 +35,19 @@ class UserViewModel extends ChangeNotifier {
     }
   }
 
+  Future<void> updateAvatar({String? avatarPath, String? avatarRpgId}) async {
+    if (_user == null) return;
+    final updated = _user!.copyWith(
+      avatarPath: avatarPath,
+      avatarRpgId: avatarRpgId,
+      clearAvatarPath: avatarPath == null && avatarRpgId != null,
+      clearAvatarRpgId: avatarRpgId == null && avatarPath != null,
+    );
+    await _userRepository.updateUser(updated);
+    _user = updated;
+    notifyListeners();
+  }
+
   Future<void> updateName(String name) async {
     if (_user == null) return;
     final updated = _user!.copyWith(name: name);
@@ -65,6 +78,48 @@ class UserViewModel extends ChangeNotifier {
     if (didLevelUp) {
       _levelUpEvent = LevelUpEvent(level);
     }
+    notifyListeners();
+  }
+
+  /// Safety net: revert XP to a known snapshot (e.g. if XP was awarded
+  /// before undo could cancel it).
+  Future<void> revokeXp({
+    required int xpBefore,
+    required int levelBefore,
+  }) async {
+    if (_user == null) return;
+    // Only revert if XP actually changed relative to snapshot
+    if (_user!.currentXp == xpBefore && _user!.level == levelBefore) return;
+    final updated = _user!.copyWith(
+      level: levelBefore,
+      currentXp: xpBefore,
+      xpToNextLevel: levelBefore * 100,
+    );
+    await _userRepository.updateUser(updated);
+    _user = updated;
+    notifyListeners();
+  }
+
+  /// Revoke a fixed amount of XP (e.g. when un-completing a habit).
+  /// Handles level-down if needed. XP cannot go below 0 at level 1.
+  Future<void> revokeXpAmount(int xp) async {
+    if (_user == null) return;
+    var level = _user!.level;
+    var currentXp = _user!.currentXp - xp;
+
+    while (currentXp < 0 && level > 1) {
+      level--;
+      currentXp += level * 100;
+    }
+    if (currentXp < 0) currentXp = 0;
+
+    final updated = _user!.copyWith(
+      level: level,
+      currentXp: currentXp,
+      xpToNextLevel: level * 100,
+    );
+    await _userRepository.updateUser(updated);
+    _user = updated;
     notifyListeners();
   }
 }

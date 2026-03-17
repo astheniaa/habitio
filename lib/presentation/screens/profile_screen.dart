@@ -7,15 +7,26 @@ import '../state/habit_view_model.dart';
 import '../widgets/radar_chart_widget.dart';
 import '../widgets/weekly_summary_item.dart';
 
-class ProfileScreen extends StatelessWidget {
+class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
 
   @override
+  State<ProfileScreen> createState() => _ProfileScreenState();
+}
+
+class _ProfileScreenState extends State<ProfileScreen>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
+  @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Consumer<HabitViewModel>(
       builder: (context, vm, _) {
         final stats = vm.weeklyStats;
         return SingleChildScrollView(
+          padding: const EdgeInsets.only(bottom: 80),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [

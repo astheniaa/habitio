@@ -7,8 +7,10 @@ import '../state/habit_view_model.dart';
 
 class HabitEditSheet extends StatefulWidget {
   final Habit? habit;
+  /// Pre-select this weekday (1=Mon … 7=Sun) when creating a new habit.
+  final int? initialWeekday;
 
-  const HabitEditSheet({super.key, this.habit});
+  const HabitEditSheet({super.key, this.habit, this.initialWeekday});
 
   @override
   State<HabitEditSheet> createState() => _HabitEditSheetState();
@@ -20,8 +22,11 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
   late HabitSpecialization _selectedSpec;
   late HabitScheduleType _scheduleType;
   late Set<int> _selectedWeekdays;
+  bool _weekdayError = false;
 
   bool get _isEditing => widget.habit != null;
+
+  int get _todayWeekday => DateTime.now().weekday; // 1=Пн … 7=Вс
 
   static const _weekdayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
 
@@ -31,8 +36,15 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
     final habit = widget.habit;
     _titleController = TextEditingController(text: habit?.title ?? '');
     _selectedSpec = habit?.specialization ?? HabitSpecialization.sport;
-    _scheduleType = habit?.scheduleType ?? HabitScheduleType.everyday;
-    _selectedWeekdays = Set<int>.from(habit?.weekdays ?? <int>[]);
+    _scheduleType = habit?.scheduleType ??
+        (widget.initialWeekday != null
+            ? HabitScheduleType.selectedWeekdays
+            : HabitScheduleType.everyday);
+    _selectedWeekdays = habit != null
+        ? Set<int>.from(habit.weekdays)
+        : (widget.initialWeekday != null
+            ? {widget.initialWeekday!}
+            : <int>{});
   }
 
   @override
@@ -99,15 +111,15 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                   onChanged: (v) {
                     if (v != null) setState(() => _scheduleType = v);
                   },
-                  child: Column(
+                  child: const Column(
                     children: [
                       RadioListTile<HabitScheduleType>(
-                        title: const Text(AppStrings.everyDay),
+                        title: Text(AppStrings.everyDay),
                         value: HabitScheduleType.everyday,
                         contentPadding: EdgeInsets.zero,
                       ),
                       RadioListTile<HabitScheduleType>(
-                        title: const Text(AppStrings.specificDays),
+                        title: Text(AppStrings.specificDays),
                         value: HabitScheduleType.selectedWeekdays,
                         contentPadding: EdgeInsets.zero,
                       ),
@@ -120,13 +132,38 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                     spacing: 8,
                     children: List.generate(7, (i) {
                       final day = i + 1;
+                      final isToday = day == _todayWeekday;
+                      final isSelected = _selectedWeekdays.contains(day);
                       return FilterChip(
-                        label: Text(_weekdayLabels[i]),
-                        selected: _selectedWeekdays.contains(day),
+                        label: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(_weekdayLabels[i]),
+                            if (isToday)
+                              Container(
+                                width: 5,
+                                height: 5,
+                                margin: const EdgeInsets.only(top: 2),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: isSelected
+                                      ? Theme.of(context).colorScheme.onPrimary
+                                      : Theme.of(context).colorScheme.primary,
+                                ),
+                              ),
+                          ],
+                        ),
+                        selected: isSelected,
                         onSelected: (selected) {
                           setState(() {
+                            _weekdayError = false;
                             if (selected) {
                               _selectedWeekdays.add(day);
+                              // Если выбраны все 7 дней — переключаем на «каждый день»
+                              if (_selectedWeekdays.length == 7) {
+                                _scheduleType = HabitScheduleType.everyday;
+                                _selectedWeekdays.clear();
+                              }
                             } else {
                               _selectedWeekdays.remove(day);
                             }
@@ -135,6 +172,17 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                       );
                     }),
                   ),
+                  if (_weekdayError)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 6),
+                      child: Text(
+                        AppStrings.validationWeekdayRequired,
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.error,
+                          fontSize: 12,
+                        ),
+                      ),
+                    ),
                 ],
                 const SizedBox(height: 24),
                 Row(
@@ -173,10 +221,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
 
     if (_scheduleType == HabitScheduleType.selectedWeekdays &&
         _selectedWeekdays.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text(AppStrings.validationWeekdayRequired)),
-      );
+      setState(() => _weekdayError = true);
       return;
     }
 
