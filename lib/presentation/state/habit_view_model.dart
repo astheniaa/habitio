@@ -7,18 +7,21 @@ import '../../domain/models/entities/habit_completion.dart';
 import '../../domain/models/weekly_stats.dart';
 import '../../domain/repositories/habit_completion_repository.dart';
 import '../../domain/repositories/habit_repository.dart';
+import '../../domain/usecases/compute_habit_statistics.dart';
 import '../../domain/usecases/compute_weekly_stats.dart';
 import '../../domain/usecases/filter_habits_for_date.dart';
 import '../../domain/utils/time_utils.dart';
 import 'user_view_model.dart';
 
 const int _xpPerCompletion = 30;
+const int _xpConsolidationBonus = 150;
 
 class HabitViewModel extends ChangeNotifier {
   final HabitRepository _habitRepository;
   final HabitCompletionRepository _completionRepository;
   final FilterHabitsForDateUseCase _filterHabits;
   final ComputeWeeklyStatsUseCase _computeWeeklyStats;
+  final ComputeHabitStatisticsUseCase _computeStats;
   UserViewModel? _userViewModel;
 
   // ignore: avoid_setters_without_getters
@@ -37,7 +40,8 @@ class HabitViewModel extends ChangeNotifier {
   })  : _habitRepository = habitRepository,
         _completionRepository = completionRepository,
         _filterHabits = FilterHabitsForDateUseCase(),
-        _computeWeeklyStats = ComputeWeeklyStatsUseCase();
+        _computeWeeklyStats = ComputeWeeklyStatsUseCase(),
+        _computeStats = ComputeHabitStatisticsUseCase();
 
   List<Habit> get habits => _habits;
   List<HabitCompletion> get completions => _completions;
@@ -124,12 +128,31 @@ class HabitViewModel extends ChangeNotifier {
       if (_userViewModel != null) {
         await _userViewModel!.awardXp(_xpPerCompletion);
         debugPrint('[HabitVM] awardXp done, xp=${_userViewModel!.user?.currentXp}');
+        await _checkAndAwardConsolidationBonus(habit);
       }
     } catch (e, st) {
       debugPrint('[HabitVM] _confirmPendingCompletion ERROR: $e\n$st');
     }
     notifyListeners();
     debugPrint('[HabitVM] _confirmPendingCompletion END id=$id');
+  }
+
+  /// Awards one-time consolidation bonus if habit just reached 21/21
+  /// and the bonus hasn't been awarded yet.
+  Future<void> _checkAndAwardConsolidationBonus(Habit habit) async {
+    if (habit.consolidationBonusAwarded) return;
+    final isConsolidated = _computeStats.isJustConsolidated(habit, _completions);
+    if (!isConsolidated) return;
+    await _userViewModel!.awardXp(_xpConsolidationBonus);
+    final updated = habit.copyWith(consolidationBonusAwarded: true);
+    await _habitRepository.updateHabit(updated);
+    final index = _habits.indexWhere((h) => h.id == habit.id);
+    if (index != -1) {
+      final list = List<Habit>.from(_habits);
+      list[index] = updated;
+      _habits = list;
+    }
+    debugPrint('[HabitVM] Consolidation bonus awarded for habit ${habit.id}');
   }
 
   // ── Direct toggle (UpcomingScreen / uncomplete on LifeScreen) ─────────────
@@ -150,6 +173,9 @@ class HabitViewModel extends ChangeNotifier {
       await _completionRepository.insertCompletion(completion);
       _completions = await _completionRepository.getAllCompletions();
       await _userViewModel?.awardXp(_xpPerCompletion);
+      if (_userViewModel != null) {
+        await _checkAndAwardConsolidationBonus(habit);
+      }
     }
     notifyListeners();
   }
@@ -170,6 +196,9 @@ class HabitViewModel extends ChangeNotifier {
       await _completionRepository.insertCompletion(completion);
       _completions = await _completionRepository.getAllCompletions();
       await _userViewModel?.awardXp(_xpPerCompletion);
+      if (_userViewModel != null) {
+        await _checkAndAwardConsolidationBonus(habit);
+      }
     }
     notifyListeners();
   }

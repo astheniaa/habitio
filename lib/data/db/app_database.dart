@@ -19,7 +19,7 @@ class AppDatabase {
 
     return await openDatabase(
       dbPath,
-      version: 2,
+      version: 3,
       onCreate: _onCreate,
       onUpgrade: _onUpgrade,
     );
@@ -31,6 +31,10 @@ class AppDatabase {
           'ALTER TABLE users ADD COLUMN avatar_path TEXT');
       await db.execute(
           'ALTER TABLE users ADD COLUMN avatar_rpg_id TEXT');
+    }
+    if (oldVersion < 3) {
+      await db.execute(
+          'ALTER TABLE habits ADD COLUMN consolidation_bonus_awarded INTEGER NOT NULL DEFAULT 0');
     }
   }
 
@@ -55,6 +59,7 @@ class AppDatabase {
         schedule_type INTEGER NOT NULL,
         weekdays TEXT NOT NULL DEFAULT '',
         is_archived INTEGER NOT NULL DEFAULT 0,
+        consolidation_bonus_awarded INTEGER NOT NULL DEFAULT 0,
         created_at TEXT,
         updated_at TEXT
       )

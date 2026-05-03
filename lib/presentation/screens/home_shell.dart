@@ -4,7 +4,7 @@ import '../widgets/bottom_nav_bar.dart';
 import '../widgets/top_user_panel.dart';
 import 'habit_edit_sheet.dart';
 import 'life_screen.dart';
-import 'profile_screen.dart';
+import 'statistics_screen.dart';
 import 'upcoming_screen.dart';
 
 class HomeShell extends StatefulWidget {
@@ -89,7 +89,7 @@ class _HomeShellState extends State<HomeShell>
           children: [
             const LifeScreen(),
             UpcomingScreen(key: _upcomingKey),
-            const ProfileScreen(),
+            const StatisticsScreen(),
           ],
         ),
       ),

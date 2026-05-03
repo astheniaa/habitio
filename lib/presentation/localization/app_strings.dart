@@ -41,4 +41,25 @@ class AppStrings {
   static const String choosePhoto = 'Выбрать фото';
   static const String rpgAvatarsTitle = 'RPG-аватары';
   static const String avatarPickerTitle = 'Выбрать аватар';
+  // Statistics screen
+  static const String statisticsTab = 'Статистика';
+  static const String periodWeek = 'Неделя';
+  static const String periodMonth = 'Месяц';
+  static const String periodAllTime = 'Всё время';
+  static const String completedInPeriod = 'Выполнено';
+  static const String activityStreak = 'Стрик активности';
+  static const String bestStreakLabel = 'Лучший стрик';
+  static const String currentStreakLabel = 'Текущий стрик';
+  static const String consolidated = 'Закреплено';
+  static const String consolidationProgress = 'Закрепление';
+  static const String daysShort = 'дн.';
+  static const String frozenWarning = 'Заморожена! Выполни задание';
+  static const String iceOverlayTitle = 'Экран заморожен';
+  static const String iceOverlaySubtitle = 'Выполни хотя бы одну привычку сегодня';
+  static const String noHabitsInCategory = 'Нет привычек';
+  static const String completionPercent = 'Выполнение';
+  static const String rpgBlock = 'Прогресс';
+  static const String postConsolidationStreak = 'После закрепления';
+  static const String freezeNotification = 'Вчера была пропущена привычка!';
+  static const String totalCompletions = 'Всего выполнений';
 }

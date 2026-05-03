@@ -9,6 +9,7 @@ class Habit {
   final HabitScheduleType scheduleType;
   final List<int> weekdays;
   final bool isArchived;
+  final bool consolidationBonusAwarded;
   final DateTime? createdAt;
   final DateTime? updatedAt;
 
@@ -19,6 +20,7 @@ class Habit {
     required this.scheduleType,
     this.weekdays = const [],
     this.isArchived = false,
+    this.consolidationBonusAwarded = false,
     this.createdAt,
     this.updatedAt,
   });
@@ -30,6 +32,7 @@ class Habit {
     HabitScheduleType? scheduleType,
     List<int>? weekdays,
     bool? isArchived,
+    bool? consolidationBonusAwarded,
     DateTime? createdAt,
     DateTime? updatedAt,
   }) {
@@ -40,6 +43,8 @@ class Habit {
       scheduleType: scheduleType ?? this.scheduleType,
       weekdays: weekdays ?? this.weekdays,
       isArchived: isArchived ?? this.isArchived,
+      consolidationBonusAwarded:
+          consolidationBonusAwarded ?? this.consolidationBonusAwarded,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
     );
@@ -53,6 +58,7 @@ class Habit {
       'schedule_type': scheduleType.index,
       'weekdays': weekdays.join(','),
       'is_archived': isArchived ? 1 : 0,
+      'consolidation_bonus_awarded': consolidationBonusAwarded ? 1 : 0,
       'created_at': createdAt?.toIso8601String(),
       'updated_at': updatedAt?.toIso8601String(),
     };
@@ -71,6 +77,8 @@ class Habit {
       scheduleType: HabitScheduleType.values[map['schedule_type'] as int],
       weekdays: weekdays,
       isArchived: (map['is_archived'] as int) == 1,
+      consolidationBonusAwarded:
+          (map['consolidation_bonus_awarded'] as int?) == 1,
       createdAt: map['created_at'] != null
           ? DateTime.parse(map['created_at'] as String)
           : null,
