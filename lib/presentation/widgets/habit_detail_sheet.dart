@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../domain/models/entities/habit.dart';
+import '../../domain/models/entities/habit_completion.dart';
 import '../../domain/models/habit_statistics.dart';
 import '../../domain/usecases/compute_habit_statistics.dart';
-import '../../domain/models/entities/habit_completion.dart';
 import '../../domain/utils/time_utils.dart';
-import '../localization/app_strings.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../state/category_view_model.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text.dart';
 import 'contribution_grid.dart';
 
 class HabitDetailSheet extends StatelessWidget {
@@ -22,16 +27,15 @@ class HabitDetailSheet extends StatelessWidget {
     required this.period,
   });
 
-  static const _green = Color(0xFF4CAF50);
-  static const _cardColor = Color(0xFF1E1E1E);
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final useCase = ComputeHabitStatisticsUseCase();
     final gridData = useCase.completionMap(habit, completions, period);
-    final now = TimeUtils.nowUtc3();
-    final today = TimeUtils.toUtc3Date(now);
+    final today = TimeUtils.toDate(TimeUtils.now());
     final periodStart = _periodStart(period, today);
+    final category =
+        context.watch<CategoryViewModel>().byId(habit.categoryId);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -41,82 +45,72 @@ class HabitDetailSheet extends StatelessWidget {
       builder: (context, scrollController) {
         return Container(
           decoration: const BoxDecoration(
-            color: Color(0xFF121212),
-            borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            color: AppColors.background,
+            borderRadius:
+                BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
           ),
           child: ListView(
             controller: scrollController,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: AppSpacing.md),
             children: [
-              // Handle
               Center(
                 child: Container(
-                  width: 40,
+                  width: 36,
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: Colors.white24,
+                    color: AppColors.hairline,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
               ),
-
-              // Title
-              Text(
-                habit.title,
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
+              Text(habit.title, style: AppText.title),
               const SizedBox(height: 4),
-              Text(
-                _specLabel(habit.specialization),
-                style: const TextStyle(
-                  fontSize: 13,
-                  color: Color(0xFF888888),
-                ),
+              Row(
+                children: [
+                  if (category != null) ...[
+                    Text(category.icon, style: const TextStyle(fontSize: 13)),
+                    const SizedBox(width: 4),
+                  ],
+                  Text(
+                    category?.name ?? '',
+                    style: AppText.caption,
+                  ),
+                ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: AppSpacing.xl),
 
               // Contribution grid
               Container(
-                padding: const EdgeInsets.all(12),
+                padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: _cardColor,
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.surface,
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
-                      'Активность',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFFCCCCCC),
-                      ),
+                    Text(
+                      loc.activityTitle.toUpperCase(),
+                      style: AppText.sectionLabel,
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: AppSpacing.sm),
                     ContributionGrid(
                       data: gridData,
                       periodStart: periodStart,
                       periodEnd: today,
                     ),
                     const SizedBox(height: 8),
-                    _gridLegend(),
+                    _gridLegend(loc),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-
-              // Stats cards
-              _statsGrid(),
-              const SizedBox(height: 16),
-
-              // Consolidation status
-              _consolidationCard(),
-              const SizedBox(height: 24),
+              const SizedBox(height: AppSpacing.lg),
+              _statsGrid(loc),
+              const SizedBox(height: AppSpacing.lg),
+              _consolidationCard(loc),
+              const SizedBox(height: AppSpacing.xl),
             ],
           ),
         );
@@ -124,15 +118,15 @@ class HabitDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _gridLegend() {
+  Widget _gridLegend(AppLocalizations loc) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        _legendItem(const Color(0xFF4CAF50), 'Выполнено'),
+        _legendItem(AppColors.accent, loc.legendCompleted),
         const SizedBox(width: 12),
-        _legendItem(const Color(0xFF5C3A3A), 'Пропуск'),
+        _legendItem(const Color(0xFF5C3A3A), loc.legendMissed),
         const SizedBox(width: 12),
-        _legendItem(const Color(0xFF1E1E1E), 'Не запл.'),
+        _legendItem(AppColors.surface, loc.legendNotScheduled),
       ],
     );
   }
@@ -150,39 +144,39 @@ class HabitDetailSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF888888))),
+        Text(label, style: AppText.footnote),
       ],
     );
   }
 
-  Widget _statsGrid() {
+  Widget _statsGrid(AppLocalizations loc) {
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       children: [
         _statCard(
-          AppStrings.currentStreakLabel,
-          '${stats.currentStreak} ${AppStrings.daysShort}',
+          loc.currentStreakLabel,
+          '${stats.currentStreak} ${loc.daysShort}',
           Icons.local_fire_department,
-          const Color(0xFFFF9800),
+          AppColors.streak,
         ),
         _statCard(
-          AppStrings.bestStreakLabel,
-          '${stats.bestStreak} ${AppStrings.daysShort}',
+          loc.bestStreakLabel,
+          '${stats.bestStreak} ${loc.daysShort}',
           Icons.emoji_events,
-          const Color(0xFFFFD700),
+          AppColors.best,
         ),
         _statCard(
-          AppStrings.completionPercent,
+          loc.completionPercent,
           '${(stats.completionPercentage * 100).round()}%',
           Icons.percent,
-          _green,
+          AppColors.accent,
         ),
         _statCard(
-          AppStrings.totalCompletions,
+          loc.totalCompletions,
           '${stats.totalCompletions}',
           Icons.check_circle_outline,
-          _green,
+          AppColors.accent,
         ),
       ],
     );
@@ -191,10 +185,10 @@ class HabitDetailSheet extends StatelessWidget {
   Widget _statCard(String label, String value, IconData icon, Color iconColor) {
     return Container(
       width: 155,
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: _cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,28 +199,23 @@ class HabitDetailSheet extends StatelessWidget {
             value,
             style: const TextStyle(
               fontSize: 20,
-              fontWeight: FontWeight.bold,
+              fontWeight: FontWeight.w700,
+              letterSpacing: -0.4,
             ),
           ),
           const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 12,
-              color: Color(0xFF888888),
-            ),
-          ),
+          Text(label, style: AppText.footnote),
         ],
       ),
     );
   }
 
-  Widget _consolidationCard() {
+  Widget _consolidationCard(AppLocalizations loc) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: _cardColor,
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -235,50 +224,48 @@ class HabitDetailSheet extends StatelessWidget {
             children: [
               Icon(
                 stats.isConsolidated ? Icons.verified : Icons.track_changes,
-                color: stats.isConsolidated ? _green : const Color(0xFFCCCCCC),
+                color: stats.isConsolidated
+                    ? AppColors.accent
+                    : AppColors.textSecondary,
                 size: 20,
               ),
               const SizedBox(width: 8),
               Text(
                 stats.isConsolidated
-                    ? AppStrings.consolidated
-                    : AppStrings.consolidationProgress,
-                style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w600,
-                ),
+                    ? loc.consolidated
+                    : loc.consolidationProgress,
+                style: AppText.callout,
               ),
               if (stats.freezeActive) ...[
                 const SizedBox(width: 8),
-                const Icon(Icons.ac_unit, color: Color(0xFF64B5F6), size: 16),
+                const Icon(Icons.ac_unit_rounded,
+                    color: AppColors.freeze, size: 16),
               ],
             ],
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: AppSpacing.md),
           if (!stats.isConsolidated) ...[
-            // Progress bar 0-21
             ClipRRect(
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: stats.consolidationProgress / 21.0,
-                backgroundColor: const Color(0xFF2D2D2D),
+                backgroundColor: AppColors.surfaceElevated,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  stats.freezeActive ? const Color(0xFF64B5F6) : _green,
+                  stats.freezeActive ? AppColors.freeze : AppColors.accent,
                 ),
                 minHeight: 8,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              '${stats.consolidationProgress} / 21 ${AppStrings.daysShort}',
-              style: const TextStyle(fontSize: 13, color: Color(0xFFAAAAAA)),
+              '${stats.consolidationProgress} / 21 ${loc.daysShort}',
+              style: AppText.caption,
             ),
-          ] else ...[
+          ] else
             Text(
-              '${AppStrings.postConsolidationStreak}: ${stats.postConsolidationStreak} ${AppStrings.daysShort}',
-              style: const TextStyle(fontSize: 14),
+              '${loc.postConsolidationStreak}: ${stats.postConsolidationStreak} ${loc.daysShort}',
+              style: AppText.body,
             ),
-          ],
         ],
       ),
     );
@@ -287,28 +274,13 @@ class HabitDetailSheet extends StatelessWidget {
   DateTime _periodStart(StatsPeriod period, DateTime today) {
     switch (period) {
       case StatsPeriod.week:
-        return TimeUtils.weekStartUtc3(today);
+        return TimeUtils.weekStart(today);
       case StatsPeriod.month:
-        return DateTime.utc(today.year, today.month, 1);
+        return DateTime(today.year, today.month, 1);
       case StatsPeriod.allTime:
         return habit.createdAt != null
-            ? TimeUtils.toUtc3Date(habit.createdAt!)
+            ? TimeUtils.toDate(habit.createdAt!)
             : today;
-    }
-  }
-
-  String _specLabel(HabitSpecialization spec) {
-    switch (spec) {
-      case HabitSpecialization.sport:
-        return AppStrings.sport;
-      case HabitSpecialization.creativity:
-        return AppStrings.creativity;
-      case HabitSpecialization.finance:
-        return AppStrings.finance;
-      case HabitSpecialization.social:
-        return AppStrings.social;
-      case HabitSpecialization.processing:
-        return AppStrings.processing;
     }
   }
 }

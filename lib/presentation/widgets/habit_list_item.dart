@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../domain/models/entities/habit.dart';
-import '../localization/app_strings.dart';
+import '../state/category_view_model.dart';
+import '../state/habit_view_model.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text.dart';
 
 class HabitListItem extends StatefulWidget {
   final Habit habit;
@@ -27,8 +32,6 @@ class HabitListItem extends StatefulWidget {
 
 class HabitListItemState extends State<HabitListItem>
     with SingleTickerProviderStateMixin {
-  static const _green = Color(0xFF4CAF50);
-
   late final AnimationController _dismissCtrl;
   late final Animation<double> _sizeFactor;
   late final Animation<double> _fadeOut;
@@ -66,7 +69,7 @@ class HabitListItemState extends State<HabitListItem>
 
   /// Reverse dismiss animation (for undo).
   Future<void> playAppear() async {
-    ++_generation; // invalidate any pending playDismiss
+    ++_generation;
     await _dismissCtrl.reverse();
     if (!mounted) return;
     setState(() => _completionVisual = false);
@@ -80,59 +83,58 @@ class HabitListItemState extends State<HabitListItem>
 
   @override
   Widget build(BuildContext context) {
-    final showCompleted = widget.isCompletedToday || _completionVisual;
+    final isDone = widget.isCompletedToday || _completionVisual;
+    final category =
+        context.watch<CategoryViewModel>().byId(widget.habit.categoryId);
 
     return SizeTransition(
       sizeFactor: _sizeFactor,
       child: FadeTransition(
         opacity: _fadeOut,
         child: AnimatedOpacity(
-          opacity: (widget.isCompletedToday || _completionVisual) ? 0.5 : 1.0,
+          opacity: isDone ? 0.5 : 1.0,
           duration: const Duration(milliseconds: 300),
-          child: InkWell(
-            onTap: widget.onEdit,
-            child: Card(
-              margin:
-                  const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 12, vertical: 8),
-                child: Row(
-                  children: [
-                    Icon(_iconForSpec(widget.habit.specialization),
-                        color: Theme.of(context).colorScheme.primary),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            widget.habit.title,
-                            style: const TextStyle(
-                              fontWeight: FontWeight.w600,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+                horizontal: AppSpacing.lg, vertical: 4),
+            child: Material(
+              color: AppColors.surface,
+              borderRadius: BorderRadius.circular(AppRadius.md),
+              child: InkWell(
+                onTap: widget.onEdit,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.md, vertical: 10),
+                  child: Row(
+                    children: [
+                      _CategoryIcon(emoji: category?.icon ?? '·'),
+                      const SizedBox(width: AppSpacing.md),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              widget.habit.title,
+                              style: AppText.body.copyWith(
+                                fontWeight: FontWeight.w500,
+                                decoration: isDone
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                decorationColor: AppColors.textTertiary,
+                              ),
                             ),
-                          ),
-                          Text(
-                            _labelForSpec(widget.habit.specialization),
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ],
+                            const SizedBox(height: 2),
+                            Text(
+                              category?.name ?? '',
+                              style: AppText.footnote,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    Column(
-                      children: [
-                        Checkbox(
-                          value: showCompleted,
-                          onChanged: (_) => widget.onToggleCompleted(),
-                          activeColor: _green,
-                        ),
-                        Text(
-                          AppStrings.completedToday,
-                          style: Theme.of(context).textTheme.labelSmall,
-                        ),
-                      ],
-                    ),
-                  ],
+                      _buildAction(context, isDone),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -142,33 +144,118 @@ class HabitListItemState extends State<HabitListItem>
     );
   }
 
-  IconData _iconForSpec(HabitSpecialization spec) {
-    switch (spec) {
-      case HabitSpecialization.sport:
-        return Icons.fitness_center;
-      case HabitSpecialization.creativity:
-        return Icons.brush;
-      case HabitSpecialization.finance:
-        return Icons.account_balance_wallet;
-      case HabitSpecialization.social:
-        return Icons.group;
-      case HabitSpecialization.processing:
-        return Icons.settings;
+  /// Right-side action: counter UI for counter habits, circular tick for binary.
+  Widget _buildAction(BuildContext context, bool isDone) {
+    if (widget.habit.isCounter && !isDone) {
+      return _CounterAction(habit: widget.habit);
     }
+    return _CompletionIndicator(
+      completed: isDone,
+      onTap: widget.onToggleCompleted,
+    );
   }
+}
 
-  String _labelForSpec(HabitSpecialization spec) {
-    switch (spec) {
-      case HabitSpecialization.sport:
-        return AppStrings.sport;
-      case HabitSpecialization.creativity:
-        return AppStrings.creativity;
-      case HabitSpecialization.finance:
-        return AppStrings.finance;
-      case HabitSpecialization.social:
-        return AppStrings.social;
-      case HabitSpecialization.processing:
-        return AppStrings.processing;
-    }
+// ─── Pieces ────────────────────────────────────────────────────────────────
+
+class _CategoryIcon extends StatelessWidget {
+  final String emoji;
+  const _CategoryIcon({required this.emoji});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 28,
+      height: 28,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.surfaceElevated,
+      ),
+      child: Text(emoji, style: const TextStyle(fontSize: 16)),
+    );
+  }
+}
+
+/// Apple-style circular completion checkmark.
+class _CompletionIndicator extends StatelessWidget {
+  final bool completed;
+  final VoidCallback onTap;
+
+  const _CompletionIndicator({
+    required this.completed,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      behavior: HitTestBehavior.opaque,
+      child: Padding(
+        padding: const EdgeInsets.all(4),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: completed ? AppColors.accent : Colors.transparent,
+            border: Border.all(
+              color: completed ? AppColors.accent : AppColors.textTertiary,
+              width: 1.5,
+            ),
+          ),
+          child: completed
+              ? const Icon(Icons.check_rounded,
+                  color: Colors.white, size: 18)
+              : null,
+        ),
+      ),
+    );
+  }
+}
+
+/// Counter UI: shows current progress as `n/target` plus a single +1 tap.
+/// Long-press on the chip subtracts 1 (forgiving, no separate – button to
+/// keep the row visually quiet).
+class _CounterAction extends StatelessWidget {
+  final Habit habit;
+  const _CounterAction({required this.habit});
+
+  @override
+  Widget build(BuildContext context) {
+    final vm = context.watch<HabitViewModel>();
+    final progress = vm.todayProgressFor(habit);
+    final target = habit.targetValue;
+
+    return GestureDetector(
+      onTap: () => vm.incrementProgressToday(habit),
+      onLongPress: () => vm.decrementProgressToday(habit),
+      behavior: HitTestBehavior.opaque,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+        decoration: BoxDecoration(
+          color: AppColors.surfaceElevated,
+          borderRadius: BorderRadius.circular(AppRadius.pill),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              '$progress / $target',
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(width: 6),
+            const Icon(Icons.add_rounded,
+                color: AppColors.accent, size: 16),
+          ],
+        ),
+      ),
+    );
   }
 }

@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 
-import '../localization/app_strings.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../theme/app_colors.dart';
 
+/// iOS-style tab bar: outline icon when inactive, filled when active,
+/// label below in matching tint. No pill backgrounds or extra chrome.
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
   final ValueChanged<int> onTap;
@@ -12,81 +15,85 @@ class BottomNavBar extends StatelessWidget {
     required this.onTap,
   });
 
-  static const _green = Color(0xFF4CAF50);
-  static const _grey = Color(0xFF888888);
-
-  static const _items = [
-    _NavItem(icon: Icons.today_outlined, label: AppStrings.todayTab),
-    _NavItem(icon: Icons.calendar_month_outlined, label: AppStrings.upcomingTab),
-    _NavItem(icon: Icons.person_outline, label: AppStrings.profileTab),
-  ];
-
   @override
   Widget build(BuildContext context) {
-    return Container(
-      height: 60,
-      decoration: BoxDecoration(
-        color: const Color(0xFF1A1A1A),
-        border: Border(
-          top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
-        ),
+    final loc = AppLocalizations.of(context)!;
+    final items = [
+      _NavItem(
+        label: loc.todayTab,
+        iconOutline: Icons.today_outlined,
+        iconFilled: Icons.today,
       ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: List.generate(_items.length, (index) {
-          final item = _items[index];
-          final isActive = index == currentIndex;
+      _NavItem(
+        label: loc.upcomingTab,
+        iconOutline: Icons.calendar_month_outlined,
+        iconFilled: Icons.calendar_month,
+      ),
+      _NavItem(
+        label: loc.statisticsTab,
+        iconOutline: Icons.insights_outlined,
+        iconFilled: Icons.insights,
+      ),
+    ];
 
-          return Expanded(
-            child: GestureDetector(
-              onTap: () => onTap(index),
-              behavior: HitTestBehavior.opaque,
-              child: Center(
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.easeInOut,
-                  padding: isActive
-                      ? const EdgeInsets.symmetric(horizontal: 16, vertical: 6)
-                      : const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-                  decoration: BoxDecoration(
-                    color: isActive
-                        ? _green.withValues(alpha: 0.15)
-                        : Colors.transparent,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
+    return Container(
+      decoration: const BoxDecoration(
+        color: AppColors.background,
+        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
+      ),
+      child: SafeArea(
+        top: false,
+        child: SizedBox(
+          height: 52,
+          child: Row(
+            children: List.generate(items.length, (index) {
+              final item = items[index];
+              final isActive = index == currentIndex;
+              final color =
+                  isActive ? AppColors.accent : AppColors.textTertiary;
+
+              return Expanded(
+                child: InkWell(
+                  onTap: () => onTap(index),
+                  splashFactory: NoSplash.splashFactory,
+                  highlightColor: Colors.transparent,
                   child: Column(
-                    mainAxisSize: MainAxisSize.min,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
-                        item.icon,
-                        color: isActive ? _green : _grey,
-                        size: 22,
+                        isActive ? item.iconFilled : item.iconOutline,
+                        color: color,
+                        size: 24,
                       ),
                       const SizedBox(height: 2),
                       Text(
                         item.label,
                         style: TextStyle(
-                          color: isActive ? _green : _grey,
-                          fontSize: 11,
-                          fontWeight: isActive
-                              ? FontWeight.w600
-                              : FontWeight.normal,
+                          fontSize: 10,
+                          fontWeight:
+                              isActive ? FontWeight.w600 : FontWeight.w500,
+                          color: color,
                         ),
                       ),
                     ],
                   ),
                 ),
-              ),
-            ),
-          );
-        }),
+              );
+            }),
+          ),
+        ),
       ),
     );
   }
 }
 
 class _NavItem {
-  final IconData icon;
   final String label;
-  const _NavItem({required this.icon, required this.label});
+  final IconData iconOutline;
+  final IconData iconFilled;
+  const _NavItem({
+    required this.label,
+    required this.iconOutline,
+    required this.iconFilled,
+  });
 }

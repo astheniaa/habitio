@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/models/entities/habit.dart';
-import '../localization/app_strings.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../state/habit_view_model.dart';
+import '../theme/app_colors.dart';
 import '../widgets/habit_list_item.dart';
 import 'habit_edit_sheet.dart';
 
@@ -25,6 +26,7 @@ class _LifeScreenState extends State<LifeScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final loc = AppLocalizations.of(context)!;
     return Consumer<HabitViewModel>(
       builder: (context, vm, _) {
         if (vm.isLoading) {
@@ -33,12 +35,13 @@ class _LifeScreenState extends State<LifeScreen>
 
         final habits = vm.todayHabits;
         if (habits.isEmpty) {
-          return const Center(
+          return Center(
             child: Padding(
-              padding: EdgeInsets.all(32),
+              padding: const EdgeInsets.all(32),
               child: Text(
-                AppStrings.emptyToday,
+                loc.emptyToday,
                 textAlign: TextAlign.center,
+                style: const TextStyle(color: AppColors.textSecondary),
               ),
             ),
           );
@@ -57,7 +60,7 @@ class _LifeScreenState extends State<LifeScreen>
               habit: habit,
               isCompletedToday: vm.isHabitCompletedToday(habit),
               isPending: vm.isHabitPending(habit.id!),
-              onToggleCompleted: () => _handleToggle(vm, habit),
+              onToggleCompleted: () => _handleToggle(vm, habit, loc),
               onEdit: () => showModalBottomSheet(
                 context: context,
                 isScrollControlled: true,
@@ -70,20 +73,28 @@ class _LifeScreenState extends State<LifeScreen>
     );
   }
 
-  void _handleToggle(HabitViewModel vm, Habit habit) {
-    // Already completed in DB → uncomplete directly
+  void _handleToggle(HabitViewModel vm, Habit habit, AppLocalizations loc) {
+    // Counter habits don't go through the pending-undo flow at all — their
+    // increment/decrement actions are wired directly inside HabitListItem.
+    // The only time _handleToggle fires for a counter habit is when the
+    // user taps the green tick to UN-complete a fully-completed habit.
     if (vm.isHabitCompletedToday(habit)) {
       vm.toggleHabitCompletionToday(habit);
       return;
     }
 
-    // Already pending → ignore (item is collapsed, shouldn't happen)
+    if (habit.isCounter) {
+      // Should be unreachable (counter habits show counter UI when not
+      // done) but keep a sane fallback.
+      vm.toggleHabitCompletionToday(habit);
+      return;
+    }
+
     if (vm.isHabitPending(habit.id!)) return;
 
-    // Start pending completion + dismiss animation + snackbar
     vm.startPendingCompletion(habit);
     _itemKeys[habit.id!]?.currentState?.playDismiss();
-    _showUndoSnackbar(vm, habit);
+    _showUndoSnackbar(vm, habit, loc);
   }
 
   void _undo(HabitViewModel vm, int habitId) {
@@ -92,50 +103,50 @@ class _LifeScreenState extends State<LifeScreen>
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
-  void _showUndoSnackbar(HabitViewModel vm, Habit habit) {
+  void _showUndoSnackbar(
+      HabitViewModel vm, Habit habit, AppLocalizations loc) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: const Color(0xFF1E1E1E),
+        backgroundColor: AppColors.surface,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.only(left: 16, bottom: 24, right: 80),
         padding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: Color(0xFF2C2C2C), width: 1),
+          side: const BorderSide(color: AppColors.divider, width: 0.5),
         ),
         duration: const Duration(seconds: 4),
         content: GestureDetector(
           onTap: () => _undo(vm, habit.id!),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(
+                const Icon(
                   Icons.undo_rounded,
-                  color: Color(0xFFE57373),
+                  color: AppColors.destructive,
                   size: 22,
                 ),
-                SizedBox(width: 12),
+                const SizedBox(width: 12),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      'Отменить',
-                      style: TextStyle(
-                        color: Color(0xFFE57373),
+                      loc.undo,
+                      style: const TextStyle(
+                        color: AppColors.destructive,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
-                    SizedBox(height: 2),
+                    const SizedBox(height: 2),
                     Text(
-                      'Выполнено',
-                      style: TextStyle(
-                        color: Color(0xFF888888),
+                      loc.doneLabel,
+                      style: const TextStyle(
+                        color: AppColors.textSecondary,
                         fontSize: 13,
-                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ],

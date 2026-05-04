@@ -2,70 +2,56 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
-import '../localization/app_strings.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../state/locale_provider.dart';
 import '../state/user_view_model.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text.dart';
 
 class AvatarPickerSheet extends StatelessWidget {
   const AvatarPickerSheet({super.key});
 
   static const _rpgAvatars = ['⚔️', '🛡️', '🧙', '🏹', '🗡️', '🔮', '🪄', '👑'];
 
-  static const _rpgColors = [
-    Color(0xFFEF5350),
-    Color(0xFF42A5F5),
-    Color(0xFFAB47BC),
-    Color(0xFF66BB6A),
-    Color(0xFF8D6E63),
-    Color(0xFF7E57C2),
-    Color(0xFFEC407A),
-    Color(0xFFFFCA28),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
     final vm = context.read<UserViewModel>();
     final currentRpgId = vm.user?.avatarRpgId;
 
     return SafeArea(
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+        padding: const EdgeInsets.fromLTRB(
+            AppSpacing.lg, AppSpacing.md, AppSpacing.lg, AppSpacing.lg),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Handle bar
             Center(
               child: Container(
-                width: 40,
+                width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: Colors.white24,
+                  color: AppColors.hairline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
             ),
-            const SizedBox(height: 16),
-            Text(
-              AppStrings.avatarPickerTitle,
-              style: Theme.of(context).textTheme.titleMedium,
-            ),
-            const SizedBox(height: 16),
-            // ── Section 1: From gallery ──────────────────────────────────
-            Text(
-              AppStrings.fromGallery,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.md),
+            Text(loc.avatarPickerTitle, style: AppText.title),
+            const SizedBox(height: AppSpacing.lg),
+
+            // ── Photo ───────────────────────────────────────────────────────
+            Text(loc.fromGallery.toUpperCase(), style: AppText.sectionLabel),
+            const SizedBox(height: AppSpacing.sm),
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: const CircleAvatar(
-                backgroundColor: Color(0xFF2A2A2A),
-                child: Icon(Icons.image_outlined, color: Color(0xFF4CAF50)),
+                backgroundColor: AppColors.surface,
+                child: Icon(Icons.image_outlined, color: AppColors.accent),
               ),
-              title: const Text(AppStrings.choosePhoto),
+              title: Text(loc.choosePhoto, style: AppText.body),
               onTap: () async {
                 final picker = ImagePicker();
                 final image = await picker.pickImage(
@@ -82,27 +68,21 @@ class AvatarPickerSheet extends StatelessWidget {
                 }
               },
             ),
-            const SizedBox(height: 16),
-            // ── Section 2: RPG avatars ───────────────────────────────────
-            Text(
-              AppStrings.rpgAvatarsTitle,
-              style: Theme.of(context)
-                  .textTheme
-                  .labelLarge
-                  ?.copyWith(color: Colors.grey),
-            ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.lg),
+
+            // ── RPG avatars ────────────────────────────────────────────────
+            Text(loc.rpgAvatarsTitle.toUpperCase(),
+                style: AppText.sectionLabel),
+            const SizedBox(height: AppSpacing.sm),
             SizedBox(
-              height: 72,
+              height: 64,
               child: ListView.separated(
                 scrollDirection: Axis.horizontal,
                 itemCount: _rpgAvatars.length,
                 separatorBuilder: (_, __) => const SizedBox(width: 10),
                 itemBuilder: (context, index) {
                   final emoji = _rpgAvatars[index];
-                  final color = _rpgColors[index];
                   final isSelected = currentRpgId == emoji;
-
                   return GestureDetector(
                     onTap: () async {
                       await vm.updateAvatar(
@@ -117,27 +97,90 @@ class AvatarPickerSheet extends StatelessWidget {
                       height: 56,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: const Color(0xFF1E1E1E),
+                        color: AppColors.surface,
                         border: Border.all(
                           color: isSelected
-                              ? const Color(0xFF4CAF50)
-                              : color.withValues(alpha: 0.6),
-                          width: isSelected ? 2.5 : 1.5,
+                              ? AppColors.accent
+                              : AppColors.divider,
+                          width: isSelected ? 2 : 0.5,
                         ),
                       ),
                       alignment: Alignment.center,
-                      child: Text(
-                        emoji,
-                        style: const TextStyle(fontSize: 26),
-                      ),
+                      child: Text(emoji, style: const TextStyle(fontSize: 26)),
                     ),
                   );
                 },
               ),
             ),
-            const SizedBox(height: 8),
+
+            const SizedBox(height: AppSpacing.xl),
+
+            // ── Language toggle ────────────────────────────────────────────
+            Text(loc.languageLabel.toUpperCase(),
+                style: AppText.sectionLabel),
+            const SizedBox(height: AppSpacing.sm),
+            const _LanguageToggle(),
+            const SizedBox(height: AppSpacing.sm),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _LanguageToggle extends StatelessWidget {
+  const _LanguageToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final localeVm = context.watch<LocaleProvider>();
+    final code = localeVm.locale?.languageCode ??
+        Localizations.localeOf(context).languageCode;
+
+    Widget tab(String langCode, String label) {
+      final active = code == langCode;
+      return Expanded(
+        child: GestureDetector(
+          onTap: () => context
+              .read<LocaleProvider>()
+              .setLocale(Locale(langCode)),
+          behavior: HitTestBehavior.opaque,
+          child: AnimatedContainer(
+            duration: const Duration(milliseconds: 180),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: active ? AppColors.surfaceElevated : Colors.transparent,
+              borderRadius: BorderRadius.circular(6),
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                  color: active
+                      ? AppColors.textPrimary
+                      : AppColors.textSecondary,
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
+    return Container(
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+      ),
+      padding: const EdgeInsets.all(3),
+      child: Row(
+        children: [
+          tab('ru', loc.languageRussian),
+          tab('en', loc.languageEnglish),
+        ],
       ),
     );
   }

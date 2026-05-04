@@ -1,31 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../domain/models/entities/category.dart';
 import '../../domain/models/entities/habit.dart';
 import '../../domain/utils/time_utils.dart';
-import '../localization/app_strings.dart';
+import '../../l10n/generated/app_localizations.dart';
+import '../state/category_view_model.dart';
 import '../state/habit_view_model.dart';
+import '../theme/app_colors.dart';
 import '../widgets/habit_list_item.dart';
 import 'habit_edit_sheet.dart';
 
-// ─── Locale data ─────────────────────────────────────────────────────────────
-
-const _monthNames = [
-  '',
-  'Январь', 'Февраль', 'Март', 'Апрель', 'Май', 'Июнь',
-  'Июль', 'Август', 'Сентябрь', 'Октябрь', 'Ноябрь', 'Декабрь',
-];
-
-const _dayShortNames = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
-
-// ─── Constants ───────────────────────────────────────────────────────────────
-
-const _green = Color(0xFF4CAF50);
 const _kCalPages = 10000;
 const _rowH = 44.0;
-const _maxGridH = 6 * _rowH; // max possible month grid height (6 weeks)
-
-// ─── Pure helpers ─────────────────────────────────────────────────────────────
+const _maxGridH = 6 * _rowH;
 
 bool _sameDay(DateTime a, DateTime b) =>
     a.year == b.year && a.month == b.month && a.day == b.day;
@@ -53,9 +41,49 @@ int _rowIndex(DateTime date, DateTime month) {
       7;
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
+String _localizedMonth(int month, AppLocalizations loc) {
+  switch (month) {
+    case 1:
+      return loc.monthJan;
+    case 2:
+      return loc.monthFeb;
+    case 3:
+      return loc.monthMar;
+    case 4:
+      return loc.monthApr;
+    case 5:
+      return loc.monthMay;
+    case 6:
+      return loc.monthJun;
+    case 7:
+      return loc.monthJul;
+    case 8:
+      return loc.monthAug;
+    case 9:
+      return loc.monthSep;
+    case 10:
+      return loc.monthOct;
+    case 11:
+      return loc.monthNov;
+    case 12:
+      return loc.monthDec;
+  }
+  return '';
+}
+
+List<String> _localizedWeekdayShortNames(AppLocalizations loc) => [
+      loc.weekdayMon,
+      loc.weekdayTue,
+      loc.weekdayWed,
+      loc.weekdayThu,
+      loc.weekdayFri,
+      loc.weekdaySat,
+      loc.weekdaySun,
+    ];
+
+// ════════════════════════════════════════════════════════════════════════════
 // UpcomingScreen
-// ═════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 
 class UpcomingScreen extends StatefulWidget {
   const UpcomingScreen({super.key});
@@ -79,7 +107,7 @@ class UpcomingScreenState extends State<UpcomingScreen>
   @override
   void initState() {
     super.initState();
-    _today = TimeUtils.toUtc3Date(TimeUtils.nowUtc3());
+    _today = TimeUtils.toDate(TimeUtils.now());
     _selectedDate = _today;
   }
 
@@ -100,14 +128,14 @@ class UpcomingScreenState extends State<UpcomingScreen>
   @override
   Widget build(BuildContext context) {
     super.build(context);
+    final loc = AppLocalizations.of(context)!;
     final headerDate = _browseMonth ?? _selectedDate;
     final monthLabel =
-        '${_monthNames[headerDate.month]} ${headerDate.year}';
+        '${_localizedMonth(headerDate.month, loc)} ${headerDate.year}';
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // ── Month header ────────────────────────────────────────────────────
         GestureDetector(
           onTap: _toggleExpanded,
           behavior: HitTestBehavior.opaque,
@@ -119,21 +147,20 @@ class UpcomingScreenState extends State<UpcomingScreen>
                 Text(
                   monthLabel,
                   style: const TextStyle(
-                      fontSize: 18, fontWeight: FontWeight.bold),
+                      fontSize: 18, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(width: 4),
                 AnimatedRotation(
                   turns: _isExpanded ? 0.5 : 0.0,
                   duration: const Duration(milliseconds: 200),
                   child: const Icon(Icons.keyboard_arrow_down,
-                      size: 20, color: Colors.grey),
+                      size: 20, color: AppColors.textTertiary),
                 ),
               ],
             ),
           ),
         ),
 
-        // ── Collapsible calendar ────────────────────────────────────────────
         _CollapsibleCalendar(
           selectedDate: _selectedDate,
           today: _today,
@@ -147,22 +174,17 @@ class UpcomingScreenState extends State<UpcomingScreen>
           }),
         ),
 
-        const Divider(height: 1, thickness: 1, color: Colors.white12),
+        const Divider(height: 1, thickness: 0.5, color: AppColors.divider),
 
-        // ── Habit list ──────────────────────────────────────────────────────
         Expanded(child: _HabitList(selectedDate: _selectedDate)),
       ],
     );
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 // _CollapsibleCalendar
-//
-// Single month grid. Collapsed = one visible row (selectedDate's week).
-// Expanded = full month. ClipRect + OverflowBox + Transform.translate
-// ensure the PageView always gets full height; only the viewport changes.
-// ═════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
 
 class _CollapsibleCalendar extends StatefulWidget {
   final DateTime selectedDate;
@@ -197,8 +219,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
   int _currentPage = _kCalPages;
   bool _programmaticScroll = false;
 
-  // ── Page helpers ──────────────────────────────────────────────────────────
-
   int _pageFor(DateTime month) {
     final base = _baseMonthPage0.year * 12 + _baseMonthPage0.month - 1;
     return month.year * 12 + month.month - 1 - base;
@@ -226,8 +246,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
     });
   }
 
-  // ── Animation targets ─────────────────────────────────────────────────────
-
   double _targetH(bool expanded) =>
       expanded ? _maxGridH : _rowH;
 
@@ -248,8 +266,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
     _animCtrl.forward(from: 0);
   }
 
-  // ── Lifecycle ─────────────────────────────────────────────────────────────
-
   @override
   void initState() {
     super.initState();
@@ -267,7 +283,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
       duration: const Duration(milliseconds: 300),
     );
 
-    // Start collapsed — show the row containing today
     _heightAnim = const AlwaysStoppedAnimation(_rowH);
     _dyAnim = AlwaysStoppedAnimation(_targetDy(false));
   }
@@ -277,7 +292,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
     super.didUpdateWidget(old);
     final selMonth = _firstOfMonth(widget.selectedDate);
 
-    // Expand / collapse
     if (widget.isExpanded != old.isExpanded) {
       if (!widget.isExpanded) {
         _jumpToMonth(selMonth);
@@ -288,7 +302,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
       return;
     }
 
-    // selectedDate changed while collapsed → slide to new row
     if (!widget.isExpanded && !_sameDay(widget.selectedDate, old.selectedDate)) {
       if (!_sameMonth(selMonth, _displayMonth)) _jumpToMonth(selMonth);
       _runTransition(false);
@@ -302,8 +315,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
     super.dispose();
   }
 
-  // ── Gestures ──────────────────────────────────────────────────────────────
-
   void _onStripSwipe(DragEndDetails d) {
     final v = d.primaryVelocity ?? 0;
     if (v.abs() < 300) return;
@@ -311,32 +322,32 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
     widget.onDaySelected(monday.add(Duration(days: v < 0 ? 7 : -7)));
   }
 
-  // ── Build ─────────────────────────────────────────────────────────────────
-
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final dayLabels = _localizedWeekdayShortNames(loc);
     return GestureDetector(
       onHorizontalDragEnd: widget.isExpanded ? null : _onStripSwipe,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Day-name header (always visible)
           Padding(
             padding: const EdgeInsets.fromLTRB(8, 2, 8, 0),
             child: Row(
-              children: _dayShortNames
+              children: dayLabels
                   .map((n) => Expanded(
                         child: Center(
                           child: Text(n,
                               style: const TextStyle(
-                                  fontSize: 12, color: Colors.grey)),
+                                  fontSize: 11,
+                                  color: AppColors.textTertiary,
+                                  fontWeight: FontWeight.w500)),
                         ),
                       ))
                   .toList(),
             ),
           ),
 
-          // Animated month grid
           AnimatedBuilder(
             animation: _animCtrl,
             builder: (context, pageView) {
@@ -383,7 +394,6 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
     );
   }
 
-  /// Full month grid — always complete, never skips rows.
   Widget _buildFullGrid(DateTime month) {
     final start = _gridStart(month);
     final numRows = _numRows(month);
@@ -430,16 +440,23 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isSel ? _green : Colors.transparent,
+                            color: isSel ? AppColors.accent : Colors.transparent,
                             border: isToday && !isSel
-                                ? Border.all(color: _green, width: 1)
+                                ? Border.all(color: AppColors.accent, width: 1)
                                 : null,
                           ),
                           alignment: Alignment.center,
                           child: Text(
                             '${date.day}',
-                            style: const TextStyle(
-                                fontSize: 16, color: Colors.white),
+                            style: TextStyle(
+                              fontSize: 15,
+                              color: isSel
+                                  ? Colors.white
+                                  : AppColors.textPrimary,
+                              fontWeight: isToday
+                                  ? FontWeight.w600
+                                  : FontWeight.w400,
+                            ),
                           ),
                         ),
                       ),
@@ -455,9 +472,9 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
   }
 }
 
-// ═════════════════════════════════════════════════════════════════════════════
-// _HabitList
-// ═════════════════════════════════════════════════════════════════════════════
+// ════════════════════════════════════════════════════════════════════════════
+// _HabitList — grouped by category
+// ════════════════════════════════════════════════════════════════════════════
 
 class _HabitList extends StatelessWidget {
   final DateTime selectedDate;
@@ -465,8 +482,9 @@ class _HabitList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<HabitViewModel>(
-      builder: (context, vm, _) {
+    final loc = AppLocalizations.of(context)!;
+    return Consumer2<HabitViewModel, CategoryViewModel>(
+      builder: (context, vm, catVm, _) {
         if (vm.isLoading) {
           return const Center(child: CircularProgressIndicator());
         }
@@ -484,10 +502,10 @@ class _HabitList extends StatelessWidget {
                       size: 48,
                       color: Colors.grey.withValues(alpha: 0.5)),
                   const SizedBox(height: 12),
-                  const Text(
-                    AppStrings.emptyUpcoming,
+                  Text(
+                    loc.emptyUpcoming,
                     textAlign: TextAlign.center,
-                    style: TextStyle(color: Colors.grey),
+                    style: const TextStyle(color: AppColors.textSecondary),
                   ),
                 ],
               ),
@@ -495,15 +513,19 @@ class _HabitList extends StatelessWidget {
           );
         }
 
-        final grouped = <HabitSpecialization, List<Habit>>{};
+        // Group by category
+        final byCat = <int, List<Habit>>{};
         for (final h in habits) {
-          grouped.putIfAbsent(h.specialization, () => []).add(h);
+          byCat.putIfAbsent(h.categoryId, () => []).add(h);
         }
 
+        // Build list items in category sort order
         final items = <_ListItem>[];
-        for (final e in grouped.entries) {
-          items.add(_ListItem.header(e.key));
-          for (final h in e.value) {
+        for (final cat in catVm.categories) {
+          final cathabits = byCat[cat.id];
+          if (cathabits == null || cathabits.isEmpty) continue;
+          items.add(_ListItem.header(cat));
+          for (final h in cathabits) {
             items.add(_ListItem.habit(h));
           }
         }
@@ -514,16 +536,23 @@ class _HabitList extends StatelessWidget {
           itemBuilder: (context, i) {
             final item = items[i];
             if (item.isHeader) {
+              final c = item.category!;
               return Padding(
                 padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
-                child: Text(
-                  _specLabel(item.spec!),
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.grey.shade400,
-                    letterSpacing: 0.8,
-                  ),
+                child: Row(
+                  children: [
+                    Text(c.icon, style: const TextStyle(fontSize: 14)),
+                    const SizedBox(width: 6),
+                    Text(
+                      c.name.toUpperCase(),
+                      style: const TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.textSecondary,
+                        letterSpacing: 0.6,
+                      ),
+                    ),
+                  ],
                 ),
               );
             }
@@ -545,28 +574,18 @@ class _HabitList extends StatelessWidget {
       },
     );
   }
-
-  String _specLabel(HabitSpecialization s) => switch (s) {
-        HabitSpecialization.sport => AppStrings.sport.toUpperCase(),
-        HabitSpecialization.creativity => AppStrings.creativity.toUpperCase(),
-        HabitSpecialization.finance => AppStrings.finance.toUpperCase(),
-        HabitSpecialization.social => AppStrings.social.toUpperCase(),
-        HabitSpecialization.processing => AppStrings.processing.toUpperCase(),
-      };
 }
-
-// ─── List item union ─────────────────────────────────────────────────────────
 
 class _ListItem {
   final bool isHeader;
-  final HabitSpecialization? spec;
+  final Category? category;
   final Habit? habit;
 
-  const _ListItem.header(this.spec)
+  const _ListItem.header(this.category)
       : isHeader = true,
         habit = null;
 
   const _ListItem.habit(this.habit)
       : isHeader = false,
-        spec = null;
+        category = null;
 }

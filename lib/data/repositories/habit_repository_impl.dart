@@ -14,7 +14,7 @@ class HabitRepositoryImpl implements HabitRepository {
   @override
   Future<Habit> insertHabit(Habit habit) async {
     final db = await AppDatabase.instance.database;
-    final now = TimeUtils.nowUtc3();
+    final now = TimeUtils.now();
     final toInsert = habit.copyWith(createdAt: now, updatedAt: now);
     final id = await db.insert('habits', toInsert.toMap());
     return toInsert.copyWith(id: id);
@@ -23,7 +23,7 @@ class HabitRepositoryImpl implements HabitRepository {
   @override
   Future<void> updateHabit(Habit habit) async {
     final db = await AppDatabase.instance.database;
-    final now = TimeUtils.nowUtc3();
+    final now = TimeUtils.now();
     final toUpdate = habit.copyWith(updatedAt: now);
     await db.update(
       'habits',

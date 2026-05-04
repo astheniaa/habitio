@@ -81,6 +81,17 @@ class UserViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Award XP scaled by a per-habit streak. The multiplier grows linearly
+  /// with the streak length and is capped at 2× (reached at 100-day streak).
+  ///
+  ///   xp = (base × min(2, 1 + streak / 100)).round()
+  Future<int> awardXpWithStreak(int base, int streak) async {
+    final multiplier = (1 + streak / 100).clamp(1.0, 2.0);
+    final amount = (base * multiplier).round();
+    await awardXp(amount);
+    return amount;
+  }
+
   /// Safety net: revert XP to a known snapshot (e.g. if XP was awarded
   /// before undo could cancel it).
   Future<void> revokeXp({
@@ -98,6 +109,15 @@ class UserViewModel extends ChangeNotifier {
     await _userRepository.updateUser(updated);
     _user = updated;
     notifyListeners();
+  }
+
+  /// Revoke streak-scaled XP using the same multiplier formula as
+  /// [awardXpWithStreak]. Returns the amount actually revoked.
+  Future<int> revokeXpWithStreak(int base, int streak) async {
+    final multiplier = (1 + streak / 100).clamp(1.0, 2.0);
+    final amount = (base * multiplier).round();
+    await revokeXpAmount(amount);
+    return amount;
   }
 
   /// Revoke a fixed amount of XP (e.g. when un-completing a habit).

@@ -6,8 +6,11 @@ import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import '../../domain/models/entities/user.dart';
-import '../localization/app_strings.dart';
+import '../../l10n/generated/app_localizations.dart';
 import '../state/user_view_model.dart';
+import '../theme/app_colors.dart';
+import '../theme/app_spacing.dart';
+import '../theme/app_text.dart';
 import 'avatar_picker_sheet.dart';
 
 class TopUserPanel extends StatefulWidget {
@@ -32,8 +35,6 @@ class _TopUserPanelState extends State<TopUserPanel>
   bool _levelUpInProgress = false;
   OverlayEntry? _overlayEntry;
   Completer<void>? _overlayCompleter;
-
-  static const _green = Color(0xFF4CAF50);
 
   @override
   void initState() {
@@ -177,6 +178,7 @@ class _TopUserPanelState extends State<TopUserPanel>
   }
 
   void _showLevelUpOverlay(int newLevel) {
+    final loc = AppLocalizations.of(context)!;
     _overlayEntry = OverlayEntry(
       builder: (_) => GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -186,33 +188,37 @@ class _TopUserPanelState extends State<TopUserPanel>
           }
         },
         child: Material(
-          color: Colors.black.withValues(alpha: 0.75),
+          color: Colors.black.withValues(alpha: 0.85),
           child: Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Text(
-                  AppStrings.levelUpBadge,
-                  style: TextStyle(
-                    color: _green,
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
-                    letterSpacing: 1.5,
-                  ),
-                ),
-                const SizedBox(height: 12),
                 Text(
-                  '${AppStrings.level} $newLevel',
+                  loc.levelUpBadge,
                   style: const TextStyle(
-                    color: Color(0xFFFFD700),
-                    fontSize: 52,
-                    fontWeight: FontWeight.bold,
+                    color: AppColors.accent,
+                    fontSize: 13,
+                    fontWeight: FontWeight.w600,
+                    letterSpacing: 1.4,
                   ),
                 ),
-                const SizedBox(height: 8),
-                const Text(
-                  AppStrings.levelUpSub,
-                  style: TextStyle(color: Colors.grey, fontSize: 16),
+                const SizedBox(height: AppSpacing.md),
+                Text(
+                  '${loc.level} $newLevel',
+                  style: const TextStyle(
+                    color: AppColors.textPrimary,
+                    fontSize: 56,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: -1,
+                  ),
+                ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  loc.levelUpSub,
+                  style: const TextStyle(
+                    color: AppColors.textSecondary,
+                    fontSize: 15,
+                  ),
                 ),
               ],
             ),
@@ -235,9 +241,9 @@ class _TopUserPanelState extends State<TopUserPanel>
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: const Color(0xFF1E1E1E),
+      backgroundColor: AppColors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(16)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
       builder: (_) => const AvatarPickerSheet(),
     );
@@ -246,26 +252,27 @@ class _TopUserPanelState extends State<TopUserPanel>
   void _onNameLongPress() {
     HapticFeedback.mediumImpact();
     final vm = context.read<UserViewModel>();
+    final loc = AppLocalizations.of(context)!;
     final currentName = vm.user?.name ?? '';
     final controller = TextEditingController(text: currentName);
 
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text(AppStrings.editNameTitle),
+        title: Text(loc.editNameTitle),
         content: TextField(
           controller: controller,
           autofocus: true,
           maxLength: 20,
-          decoration: const InputDecoration(
-            hintText: AppStrings.editNameHint,
-            border: OutlineInputBorder(),
+          decoration: InputDecoration(
+            hintText: loc.editNameHint,
+            border: const OutlineInputBorder(),
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text(AppStrings.cancel),
+            child: Text(loc.cancel),
           ),
           ElevatedButton(
             onPressed: () {
@@ -274,7 +281,7 @@ class _TopUserPanelState extends State<TopUserPanel>
               vm.updateName(name);
               Navigator.of(ctx).pop();
             },
-            child: const Text(AppStrings.save),
+            child: Text(loc.save),
           ),
         ],
       ),
@@ -298,7 +305,7 @@ class _TopUserPanelState extends State<TopUserPanel>
       );
     } else if (avatarRpgId != null && avatarRpgId.isNotEmpty) {
       return Container(
-        color: const Color(0xFF1E1E1E),
+        color: AppColors.surface,
         alignment: Alignment.center,
         child: Text(avatarRpgId, style: const TextStyle(fontSize: 24)),
       );
@@ -310,14 +317,14 @@ class _TopUserPanelState extends State<TopUserPanel>
   Widget _buildInitialAvatar(String name) {
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
     return Container(
-      color: _green.withValues(alpha: 0.2),
+      color: AppColors.surface,
       alignment: Alignment.center,
       child: Text(
         initial,
         style: const TextStyle(
-          color: _green,
-          fontSize: 20,
-          fontWeight: FontWeight.bold,
+          color: AppColors.textPrimary,
+          fontSize: 18,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -338,9 +345,11 @@ class _TopUserPanelState extends State<TopUserPanel>
 
     final user = vm.user ?? _prevUser;
     final name = user?.name ?? '';
+    final loc = AppLocalizations.of(context)!;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg, vertical: AppSpacing.md),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
@@ -348,23 +357,23 @@ class _TopUserPanelState extends State<TopUserPanel>
           GestureDetector(
             onTap: _onAvatarTap,
             child: Container(
-              width: 48,
-              height: 48,
-              decoration: BoxDecoration(
+              width: 44,
+              height: 44,
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: _green, width: 2),
+                color: AppColors.surface,
               ),
               child: ClipOval(child: _buildAvatarContent(user)),
             ),
           ),
-          const SizedBox(width: 12),
+          const SizedBox(width: AppSpacing.md),
           // ── Right column ─────────────────────────────────────────────────
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
-                // Name + level badge
+                // Name + level
                 Row(
                   children: [
                     Flexible(
@@ -372,53 +381,45 @@ class _TopUserPanelState extends State<TopUserPanel>
                         onLongPress: _onNameLongPress,
                         child: Text(
                           name,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                          ),
+                          style: AppText.headline,
                           overflow: TextOverflow.ellipsis,
                         ),
                       ),
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: AppSpacing.sm),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 200),
                       transitionBuilder: (child, anim) =>
                           FadeTransition(opacity: anim, child: child),
-                      child: Container(
+                      child: Text(
                         key: ValueKey(_displayLevel),
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: _green.withValues(alpha: 0.15),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          'Lvl $_displayLevel',
-                          style: const TextStyle(
-                            color: _green,
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
+                        '· ${loc.level} $_displayLevel',
+                        style: const TextStyle(
+                          color: AppColors.textTertiary,
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
                         ),
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 // XP bar
-                LinearProgressIndicator(
-                  value: _barAnim.value.clamp(0.0, 1.0),
-                  minHeight: 6,
-                  borderRadius: BorderRadius.circular(3),
-                  backgroundColor: Colors.white.withValues(alpha: 0.1),
-                  valueColor: const AlwaysStoppedAnimation(_green),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(2),
+                  child: LinearProgressIndicator(
+                    value: _barAnim.value.clamp(0.0, 1.0),
+                    minHeight: 4,
+                    backgroundColor: AppColors.surface,
+                    valueColor:
+                        const AlwaysStoppedAnimation(AppColors.accent),
+                  ),
                 ),
-                const SizedBox(height: 2),
+                const SizedBox(height: 4),
                 // XP text
                 Text(
-                  '${_xpNumAnim.value} / $_displayDenom ${AppStrings.xp}',
-                  style: const TextStyle(fontSize: 11, color: Colors.grey),
+                  '${_xpNumAnim.value} / $_displayDenom ${loc.xp}',
+                  style: AppText.footnote,
                 ),
               ],
             ),

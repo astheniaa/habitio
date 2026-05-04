@@ -18,6 +18,17 @@ class HabitCompletionRepositoryImpl implements HabitCompletionRepository {
   }
 
   @override
+  Future<void> updateCompletion(HabitCompletion completion) async {
+    final db = await AppDatabase.instance.database;
+    await db.update(
+      'habit_completions',
+      completion.toMap(),
+      where: 'id = ?',
+      whereArgs: [completion.id],
+    );
+  }
+
+  @override
   Future<void> deleteCompletion(int id) async {
     final db = await AppDatabase.instance.database;
     await db.delete('habit_completions', where: 'id = ?', whereArgs: [id]);
@@ -27,7 +38,7 @@ class HabitCompletionRepositoryImpl implements HabitCompletionRepository {
   Future<void> deleteCompletionByHabitAndDate(
       int habitId, DateTime date) async {
     final db = await AppDatabase.instance.database;
-    final normalizedDate = TimeUtils.toUtc3Date(date);
+    final normalizedDate = TimeUtils.toDate(date);
 
     // Query all completions for this habit and find the one matching the date
     final maps = await db.query(
@@ -38,7 +49,7 @@ class HabitCompletionRepositoryImpl implements HabitCompletionRepository {
 
     for (final map in maps) {
       final completion = HabitCompletion.fromMap(map);
-      if (TimeUtils.isSameUtc3Date(completion.date, normalizedDate)) {
+      if (TimeUtils.isSameDate(completion.date, normalizedDate)) {
         await db.delete(
           'habit_completions',
           where: 'id = ?',

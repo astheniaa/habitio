@@ -1,24 +1,30 @@
+/// Date / time helpers operating in the device's local timezone.
+///
+/// Habits, completions and streaks are intrinsically calendar-day concepts,
+/// so we work with **local** dates throughout. All "date" values returned by
+/// these helpers have their time component zeroed (local midnight).
 class TimeUtils {
-  static const _utc3Offset = Duration(hours: 3);
+  TimeUtils._();
 
-  static DateTime nowUtc3() => DateTime.now().toUtc().add(_utc3Offset);
+  /// Current local instant.
+  static DateTime now() => DateTime.now();
 
-  static DateTime toUtc3Date(DateTime dt) {
-    final utc3 = dt.toUtc().add(_utc3Offset);
-    return DateTime.utc(utc3.year, utc3.month, utc3.day);
+  /// Local midnight of the day [dt] falls on.
+  static DateTime toDate(DateTime dt) {
+    final local = dt.isUtc ? dt.toLocal() : dt;
+    return DateTime(local.year, local.month, local.day);
   }
 
-  static DateTime weekStartUtc3(DateTime dt) {
-    final utc3Date = toUtc3Date(dt);
-    final daysFromMonday = utc3Date.weekday - 1;
-    return utc3Date.subtract(Duration(days: daysFromMonday));
+  /// Local Monday-midnight of the week containing [dt].
+  static DateTime weekStart(DateTime dt) {
+    final d = toDate(dt);
+    return d.subtract(Duration(days: d.weekday - 1));
   }
 
-  static bool isSameUtc3Date(DateTime a, DateTime b) {
-    final dateA = toUtc3Date(a);
-    final dateB = toUtc3Date(b);
-    return dateA.year == dateB.year &&
-        dateA.month == dateB.month &&
-        dateA.day == dateB.day;
+  /// Whether [a] and [b] are the same local calendar day.
+  static bool isSameDate(DateTime a, DateTime b) {
+    final da = toDate(a);
+    final db = toDate(b);
+    return da.year == db.year && da.month == db.month && da.day == db.day;
   }
 }

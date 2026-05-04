@@ -12,8 +12,8 @@ class ComputeHabitStatisticsUseCase {
     List<HabitCompletion> allCompletions,
     StatsPeriod period,
   ) {
-    final now = TimeUtils.nowUtc3();
-    final today = TimeUtils.toUtc3Date(now);
+    final now = TimeUtils.now();
+    final today = TimeUtils.toDate(now);
 
     // Filter completions for this habit only
     final completions =
@@ -22,15 +22,15 @@ class ComputeHabitStatisticsUseCase {
     // Build set of completed dates for O(1) lookup
     final completedDates = <DateTime>{};
     for (final c in completions) {
-      completedDates.add(TimeUtils.toUtc3Date(c.date));
+      completedDates.add(TimeUtils.toDate(c.date));
     }
 
     // All-time scheduled dates (from creation to today)
     final creationDate = habit.createdAt != null
-        ? TimeUtils.toUtc3Date(habit.createdAt!)
+        ? TimeUtils.toDate(habit.createdAt!)
         : (completions.isNotEmpty
             ? completions
-                .map((c) => TimeUtils.toUtc3Date(c.date))
+                .map((c) => TimeUtils.toDate(c.date))
                 .reduce((a, b) => a.isBefore(b) ? a : b)
             : today);
 
@@ -70,8 +70,8 @@ class ComputeHabitStatisticsUseCase {
     List<HabitCompletion> completions,
     StatsPeriod period,
   ) {
-    final now = TimeUtils.nowUtc3();
-    final today = TimeUtils.toUtc3Date(now);
+    final now = TimeUtils.now();
+    final today = TimeUtils.toDate(now);
     final active = habits.where((h) => !h.isArchived).toList();
 
     // Total completions in period
@@ -81,7 +81,7 @@ class ComputeHabitStatisticsUseCase {
       active.isEmpty ? today : _earliestCreation(active),
     );
     final periodCompletions = completions.where((c) {
-      final d = TimeUtils.toUtc3Date(c.date);
+      final d = TimeUtils.toDate(c.date);
       return !d.isBefore(periodStart) && !d.isAfter(today);
     }).length;
 
@@ -113,19 +113,19 @@ class ComputeHabitStatisticsUseCase {
       StatsPeriod period, DateTime today, DateTime earliest) {
     switch (period) {
       case StatsPeriod.week:
-        return TimeUtils.weekStartUtc3(today);
+        return TimeUtils.weekStart(today);
       case StatsPeriod.month:
-        return DateTime.utc(today.year, today.month, 1);
+        return DateTime(today.year, today.month, 1);
       case StatsPeriod.allTime:
         return earliest;
     }
   }
 
   DateTime _earliestCreation(List<Habit> habits) {
-    DateTime earliest = TimeUtils.nowUtc3();
+    DateTime earliest = TimeUtils.now();
     for (final h in habits) {
       if (h.createdAt != null) {
-        final d = TimeUtils.toUtc3Date(h.createdAt!);
+        final d = TimeUtils.toDate(h.createdAt!);
         if (d.isBefore(earliest)) earliest = d;
       }
     }
@@ -251,7 +251,7 @@ class ComputeHabitStatisticsUseCase {
   ) {
     final completedDays = <DateTime>{};
     for (final c in completions) {
-      completedDays.add(TimeUtils.toUtc3Date(c.date));
+      completedDays.add(TimeUtils.toDate(c.date));
     }
 
     int streak = 0;
@@ -273,15 +273,15 @@ class ComputeHabitStatisticsUseCase {
     Habit habit,
     List<HabitCompletion> completions,
   ) {
-    final now = TimeUtils.nowUtc3();
-    final today = TimeUtils.toUtc3Date(now);
+    final now = TimeUtils.now();
+    final today = TimeUtils.toDate(now);
     final creationDate = habit.createdAt != null
-        ? TimeUtils.toUtc3Date(habit.createdAt!)
+        ? TimeUtils.toDate(habit.createdAt!)
         : today;
     final scheduled = _scheduledDates(habit, creationDate, today);
     final completedDates = <DateTime>{};
     for (final c in completions.where((c) => c.habitId == habit.id)) {
-      completedDates.add(TimeUtils.toUtc3Date(c.date));
+      completedDates.add(TimeUtils.toDate(c.date));
     }
     final result = _computeConsolidation(scheduled, completedDates);
     return result.isConsolidated;
@@ -293,16 +293,16 @@ class ComputeHabitStatisticsUseCase {
     List<HabitCompletion> completions,
     StatsPeriod period,
   ) {
-    final now = TimeUtils.nowUtc3();
-    final today = TimeUtils.toUtc3Date(now);
+    final now = TimeUtils.now();
+    final today = TimeUtils.toDate(now);
     final creationDate = habit.createdAt != null
-        ? TimeUtils.toUtc3Date(habit.createdAt!)
+        ? TimeUtils.toDate(habit.createdAt!)
         : today;
     final periodStart = _periodStart(period, today, creationDate);
 
     final completedDates = <DateTime>{};
     for (final c in completions.where((c) => c.habitId == habit.id)) {
-      completedDates.add(TimeUtils.toUtc3Date(c.date));
+      completedDates.add(TimeUtils.toDate(c.date));
     }
 
     final map = <DateTime, bool>{};
@@ -318,12 +318,12 @@ class ComputeHabitStatisticsUseCase {
 
   /// Whether yesterday had any missed scheduled habit (for ice overlay).
   bool hadMissYesterday(List<Habit> habits, List<HabitCompletion> completions) {
-    final now = TimeUtils.nowUtc3();
-    final yesterday = TimeUtils.toUtc3Date(now).subtract(const Duration(days: 1));
+    final now = TimeUtils.now();
+    final yesterday = TimeUtils.toDate(now).subtract(const Duration(days: 1));
 
     final completedYesterday = <int>{};
     for (final c in completions) {
-      if (TimeUtils.isSameUtc3Date(c.date, yesterday)) {
+      if (TimeUtils.isSameDate(c.date, yesterday)) {
         completedYesterday.add(c.habitId);
       }
     }
@@ -333,7 +333,7 @@ class ComputeHabitStatisticsUseCase {
       if (!_isScheduled(h, yesterday)) continue;
       // Check habit existed by yesterday
       if (h.createdAt != null &&
-          TimeUtils.toUtc3Date(h.createdAt!).isAfter(yesterday)) {
+          TimeUtils.toDate(h.createdAt!).isAfter(yesterday)) {
         continue;
       }
       if (!completedYesterday.contains(h.id)) return true;
@@ -343,9 +343,9 @@ class ComputeHabitStatisticsUseCase {
 
   /// Whether any habit was completed today (to dismiss ice).
   bool hasCompletionToday(List<HabitCompletion> completions) {
-    final now = TimeUtils.nowUtc3();
-    final today = TimeUtils.toUtc3Date(now);
-    return completions.any((c) => TimeUtils.isSameUtc3Date(c.date, today));
+    final now = TimeUtils.now();
+    final today = TimeUtils.toDate(now);
+    return completions.any((c) => TimeUtils.isSameDate(c.date, today));
   }
 }
 
