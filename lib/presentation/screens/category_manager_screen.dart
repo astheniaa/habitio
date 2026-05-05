@@ -44,8 +44,8 @@ class CategoryManagerScreen extends StatelessWidget {
       ),
       floatingActionButton: FloatingActionButton.extended(
         icon: const Icon(Icons.add_rounded, color: Colors.white),
-        label: Text(loc.newCategory,
-            style: const TextStyle(color: Colors.white)),
+        label:
+            Text(loc.newCategory, style: const TextStyle(color: Colors.white)),
         onPressed: () => _openEditor(context, null),
       ),
     );
@@ -53,10 +53,11 @@ class CategoryManagerScreen extends StatelessWidget {
 }
 
 void _openEditor(BuildContext context, Category? existing) {
+  final colors = AppColors.of(context);
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
-    backgroundColor: AppColors.background,
+    backgroundColor: colors.background,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
     ),
@@ -71,11 +72,12 @@ class _CategoryRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     return Padding(
-      padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.lg, vertical: 4),
+      padding:
+          const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: 4),
       child: Material(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: InkWell(
           onTap: () => _openEditor(context, category),
@@ -89,9 +91,9 @@ class _CategoryRow extends StatelessWidget {
                   width: 32,
                   height: 32,
                   alignment: Alignment.center,
-                  decoration: const BoxDecoration(
+                  decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: AppColors.surfaceElevated,
+                    color: colors.surfaceElevated,
                   ),
                   child:
                       Text(category.icon, style: const TextStyle(fontSize: 18)),
@@ -101,12 +103,11 @@ class _CategoryRow extends StatelessWidget {
                   child: Text(category.name, style: AppText.body),
                 ),
                 IconButton(
-                  icon: const Icon(Icons.delete_outline_rounded,
-                      color: AppColors.textTertiary),
+                  icon: Icon(Icons.delete_outline_rounded,
+                      color: colors.textTertiary),
                   onPressed: () => _confirmDelete(context, category, loc),
                 ),
-                const Icon(Icons.drag_handle_rounded,
-                    color: AppColors.textTertiary),
+                Icon(Icons.drag_handle_rounded, color: colors.textTertiary),
               ],
             ),
           ),
@@ -120,10 +121,11 @@ class _CategoryRow extends StatelessWidget {
     Category category,
     AppLocalizations loc,
   ) async {
+    final colors = AppColors.of(context);
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         title: Text(loc.categoryDeleteConfirmTitle),
         content: Text(loc.categoryDeleteConfirmBody),
         actions: [
@@ -133,8 +135,7 @@ class _CategoryRow extends StatelessWidget {
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: TextButton.styleFrom(
-                foregroundColor: AppColors.destructive),
+            style: TextButton.styleFrom(foregroundColor: colors.destructive),
             child: Text(loc.delete),
           ),
         ],
@@ -180,6 +181,7 @@ class _CategoryEditorSheetState extends State<_CategoryEditorSheet> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final isEdit = widget.existing != null;
 
     return Padding(
@@ -198,7 +200,7 @@ class _CategoryEditorSheetState extends State<_CategoryEditorSheet> {
                   width: 36,
                   height: 4,
                   decoration: BoxDecoration(
-                    color: AppColors.hairline,
+                    color: colors.hairline,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -220,10 +222,9 @@ class _CategoryEditorSheetState extends State<_CategoryEditorSheet> {
                       decoration: InputDecoration(
                         hintText: '🏃',
                         filled: true,
-                        fillColor: AppColors.surface,
+                        fillColor: colors.surface,
                         border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppRadius.sm),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -238,14 +239,13 @@ class _CategoryEditorSheetState extends State<_CategoryEditorSheet> {
                       decoration: InputDecoration(
                         hintText: loc.categoryNameLabel,
                         filled: true,
-                        fillColor: AppColors.surface,
+                        fillColor: colors.surface,
                         contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md,
                           vertical: AppSpacing.md,
                         ),
                         border: OutlineInputBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppRadius.sm),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                           borderSide: BorderSide.none,
                         ),
                       ),
@@ -260,18 +260,17 @@ class _CategoryEditorSheetState extends State<_CategoryEditorSheet> {
                   TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(
-                        foregroundColor: AppColors.textSecondary),
+                        foregroundColor: colors.textSecondary),
                     child: Text(loc.cancel),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.accent,
+                      backgroundColor: colors.accent,
                       foregroundColor: Colors.white,
                       elevation: 0,
                       shape: RoundedRectangleBorder(
-                        borderRadius:
-                            BorderRadius.circular(AppRadius.sm),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
                       ),
                     ),
                     onPressed: _submit,

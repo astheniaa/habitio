@@ -1,70 +1,69 @@
 import 'package:flutter/material.dart';
 
-import 'app_colors.dart';
-
 /// Typography scale modelled on Apple's SF text styles.
-/// Weights are restrained — semibold (600) for emphasis, bold (700) only for
-/// display-level numbers.
+///
+/// Styles are intentionally uncolored so widgets inherit the active
+/// [ThemeData] text color in both day and night themes.
 class AppText {
   AppText._();
 
-  static const TextStyle largeTitle = TextStyle(
+  static const TextStyle _largeTitle = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
     height: 1.15,
     letterSpacing: -0.4,
-    color: AppColors.textPrimary,
   );
 
-  static const TextStyle title = TextStyle(
+  static const TextStyle _title = TextStyle(
     fontSize: 20,
     fontWeight: FontWeight.w600,
     height: 1.2,
     letterSpacing: -0.2,
-    color: AppColors.textPrimary,
   );
 
-  static const TextStyle headline = TextStyle(
+  static const TextStyle _headline = TextStyle(
     fontSize: 17,
     fontWeight: FontWeight.w600,
     height: 1.25,
-    color: AppColors.textPrimary,
   );
 
-  static const TextStyle body = TextStyle(
+  static const TextStyle _body = TextStyle(
     fontSize: 15,
     fontWeight: FontWeight.w400,
     height: 1.3,
-    color: AppColors.textPrimary,
   );
 
-  static const TextStyle callout = TextStyle(
+  static const TextStyle _callout = TextStyle(
     fontSize: 14,
     fontWeight: FontWeight.w500,
     height: 1.3,
-    color: AppColors.textPrimary,
   );
 
-  static const TextStyle caption = TextStyle(
+  static const TextStyle _caption = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w400,
     height: 1.25,
-    color: AppColors.textSecondary,
   );
 
-  static const TextStyle footnote = TextStyle(
+  static const TextStyle _footnote = TextStyle(
     fontSize: 11,
     fontWeight: FontWeight.w400,
     height: 1.2,
-    color: AppColors.textTertiary,
   );
 
-  /// Small uppercase section labels (Apple groups headers in Settings).
-  static const TextStyle sectionLabel = TextStyle(
+  static const TextStyle _sectionLabel = TextStyle(
     fontSize: 12,
     fontWeight: FontWeight.w600,
     height: 1.2,
     letterSpacing: 0.6,
-    color: AppColors.textSecondary,
   );
+
+  static TextStyle get largeTitle => _largeTitle;
+  static TextStyle get title => _title;
+  static TextStyle get headline => _headline;
+  static TextStyle get body => _body;
+  static TextStyle get callout => _callout;
+  static TextStyle get caption => _caption;
+  static TextStyle get footnote => _footnote;
+  static TextStyle get sectionLabel => _sectionLabel;
 }

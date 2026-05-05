@@ -30,12 +30,12 @@ class HabitDetailSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final useCase = ComputeHabitStatisticsUseCase();
     final gridData = useCase.completionMap(habit, completions, period);
     final today = TimeUtils.toDate(TimeUtils.now());
     final periodStart = _periodStart(period, today);
-    final category =
-        context.watch<CategoryViewModel>().byId(habit.categoryId);
+    final category = context.watch<CategoryViewModel>().byId(habit.categoryId);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.7,
@@ -44,10 +44,10 @@ class HabitDetailSheet extends StatelessWidget {
       expand: false,
       builder: (context, scrollController) {
         return Container(
-          decoration: const BoxDecoration(
-            color: AppColors.background,
+          decoration: BoxDecoration(
+            color: colors.background,
             borderRadius:
-                BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+                const BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
           ),
           child: ListView(
             controller: scrollController,
@@ -60,7 +60,7 @@ class HabitDetailSheet extends StatelessWidget {
                   height: 4,
                   margin: const EdgeInsets.only(bottom: 16),
                   decoration: BoxDecoration(
-                    color: AppColors.hairline,
+                    color: colors.hairline,
                     borderRadius: BorderRadius.circular(2),
                   ),
                 ),
@@ -75,7 +75,9 @@ class HabitDetailSheet extends StatelessWidget {
                   ],
                   Text(
                     category?.name ?? '',
-                    style: AppText.caption,
+                    style: AppText.caption.copyWith(
+                      color: colors.textSecondary,
+                    ),
                   ),
                 ],
               ),
@@ -85,7 +87,7 @@ class HabitDetailSheet extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(AppSpacing.md),
                 decoration: BoxDecoration(
-                  color: AppColors.surface,
+                  color: colors.surface,
                   borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Column(
@@ -93,7 +95,9 @@ class HabitDetailSheet extends StatelessWidget {
                   children: [
                     Text(
                       loc.activityTitle.toUpperCase(),
-                      style: AppText.sectionLabel,
+                      style: AppText.sectionLabel.copyWith(
+                        color: colors.textSecondary,
+                      ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     ContributionGrid(
@@ -102,14 +106,14 @@ class HabitDetailSheet extends StatelessWidget {
                       periodEnd: today,
                     ),
                     const SizedBox(height: 8),
-                    _gridLegend(loc),
+                    _gridLegend(context, loc),
                   ],
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),
-              _statsGrid(loc),
+              _statsGrid(context, loc),
               const SizedBox(height: AppSpacing.lg),
-              _consolidationCard(loc),
+              _consolidationCard(context, loc),
               const SizedBox(height: AppSpacing.xl),
             ],
           ),
@@ -118,20 +122,22 @@ class HabitDetailSheet extends StatelessWidget {
     );
   }
 
-  Widget _gridLegend(AppLocalizations loc) {
+  Widget _gridLegend(BuildContext context, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Row(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        _legendItem(AppColors.accent, loc.legendCompleted),
+        _legendItem(context, colors.accent, loc.legendCompleted),
         const SizedBox(width: 12),
-        _legendItem(const Color(0xFF5C3A3A), loc.legendMissed),
+        _legendItem(context, colors.missed, loc.legendMissed),
         const SizedBox(width: 12),
-        _legendItem(AppColors.surface, loc.legendNotScheduled),
+        _legendItem(context, colors.surface, loc.legendNotScheduled),
       ],
     );
   }
 
-  Widget _legendItem(Color color, String label) {
+  Widget _legendItem(BuildContext context, Color color, String label) {
+    final colors = AppColors.of(context);
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -144,50 +150,65 @@ class HabitDetailSheet extends StatelessWidget {
           ),
         ),
         const SizedBox(width: 4),
-        Text(label, style: AppText.footnote),
+        Text(
+          label,
+          style: AppText.footnote.copyWith(color: colors.textTertiary),
+        ),
       ],
     );
   }
 
-  Widget _statsGrid(AppLocalizations loc) {
+  Widget _statsGrid(BuildContext context, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       children: [
         _statCard(
+          context,
           loc.currentStreakLabel,
           '${stats.currentStreak} ${loc.daysShort}',
           Icons.local_fire_department,
-          AppColors.streak,
+          colors.streak,
         ),
         _statCard(
+          context,
           loc.bestStreakLabel,
           '${stats.bestStreak} ${loc.daysShort}',
           Icons.emoji_events,
-          AppColors.best,
+          colors.best,
         ),
         _statCard(
+          context,
           loc.completionPercent,
           '${(stats.completionPercentage * 100).round()}%',
           Icons.percent,
-          AppColors.accent,
+          colors.accent,
         ),
         _statCard(
+          context,
           loc.totalCompletions,
           '${stats.totalCompletions}',
           Icons.check_circle_outline,
-          AppColors.accent,
+          colors.accent,
         ),
       ],
     );
   }
 
-  Widget _statCard(String label, String value, IconData icon, Color iconColor) {
+  Widget _statCard(
+    BuildContext context,
+    String label,
+    String value,
+    IconData icon,
+    Color iconColor,
+  ) {
+    final colors = AppColors.of(context);
     return Container(
       width: 155,
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
@@ -204,17 +225,21 @@ class HabitDetailSheet extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 2),
-          Text(label, style: AppText.footnote),
+          Text(
+            label,
+            style: AppText.footnote.copyWith(color: colors.textTertiary),
+          ),
         ],
       ),
     );
   }
 
-  Widget _consolidationCard(AppLocalizations loc) {
+  Widget _consolidationCard(BuildContext context, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
@@ -224,9 +249,8 @@ class HabitDetailSheet extends StatelessWidget {
             children: [
               Icon(
                 stats.isConsolidated ? Icons.verified : Icons.track_changes,
-                color: stats.isConsolidated
-                    ? AppColors.accent
-                    : AppColors.textSecondary,
+                color:
+                    stats.isConsolidated ? colors.accent : colors.textSecondary,
                 size: 20,
               ),
               const SizedBox(width: 8),
@@ -238,8 +262,7 @@ class HabitDetailSheet extends StatelessWidget {
               ),
               if (stats.freezeActive) ...[
                 const SizedBox(width: 8),
-                const Icon(Icons.ac_unit_rounded,
-                    color: AppColors.freeze, size: 16),
+                Icon(Icons.ac_unit_rounded, color: colors.freeze, size: 16),
               ],
             ],
           ),
@@ -249,9 +272,9 @@ class HabitDetailSheet extends StatelessWidget {
               borderRadius: BorderRadius.circular(4),
               child: LinearProgressIndicator(
                 value: stats.consolidationProgress / 21.0,
-                backgroundColor: AppColors.surfaceElevated,
+                backgroundColor: colors.surfaceElevated,
                 valueColor: AlwaysStoppedAnimation<Color>(
-                  stats.freezeActive ? AppColors.freeze : AppColors.accent,
+                  stats.freezeActive ? colors.freeze : colors.accent,
                 ),
                 minHeight: 8,
               ),
@@ -259,7 +282,7 @@ class HabitDetailSheet extends StatelessWidget {
             const SizedBox(height: 8),
             Text(
               '${stats.consolidationProgress} / 21 ${loc.daysShort}',
-              style: AppText.caption,
+              style: AppText.caption.copyWith(color: colors.textSecondary),
             ),
           ] else
             Text(

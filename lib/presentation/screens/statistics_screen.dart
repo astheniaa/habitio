@@ -67,11 +67,12 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   // ── Banner ──────────────────────────────────────────────────────────────
 
   Widget _missBanner(AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
       child: Material(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
         child: InkWell(
           borderRadius: BorderRadius.circular(AppRadius.md),
@@ -81,14 +82,12 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                 horizontal: AppSpacing.md, vertical: AppSpacing.md),
             child: Row(
               children: [
-                const Icon(Icons.ac_unit_rounded,
-                    color: AppColors.freeze, size: 20),
+                Icon(Icons.ac_unit_rounded, color: colors.freeze, size: 20),
                 const SizedBox(width: AppSpacing.md),
                 Expanded(
                   child: Text(loc.freezeNotification, style: AppText.callout),
                 ),
-                const Icon(Icons.close_rounded,
-                    color: AppColors.textTertiary, size: 18),
+                Icon(Icons.close_rounded, color: colors.textTertiary, size: 18),
               ],
             ),
           ),
@@ -100,11 +99,12 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   // ── Period switcher ─────────────────────────────────────────────────────
 
   Widget _periodSwitcher(AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Container(
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(AppRadius.sm),
         ),
         padding: const EdgeInsets.all(3),
@@ -119,9 +119,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                   duration: const Duration(milliseconds: 180),
                   padding: const EdgeInsets.symmetric(vertical: 8),
                   decoration: BoxDecoration(
-                    color: active
-                        ? AppColors.surfaceElevated
-                        : Colors.transparent,
+                    color: active ? colors.surfaceElevated : Colors.transparent,
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Center(
@@ -129,11 +127,9 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                       _periodLabel(p, loc),
                       style: TextStyle(
                         fontSize: 13,
-                        fontWeight:
-                            active ? FontWeight.w600 : FontWeight.w500,
-                        color: active
-                            ? AppColors.textPrimary
-                            : AppColors.textSecondary,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w500,
+                        color:
+                            active ? colors.textPrimary : colors.textSecondary,
                       ),
                     ),
                   ),
@@ -160,6 +156,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   // ── Summary cards ───────────────────────────────────────────────────────
 
   Widget _summaryRow(OverallStatistics overall, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
       child: Row(
@@ -177,8 +174,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
               label: loc.activityStreak,
               suffix: loc.daysShort,
               accent: overall.activityStreak > 0
-                  ? AppColors.streak
-                  : AppColors.textTertiary,
+                  ? colors.streak
+                  : colors.textTertiary,
             ),
           ),
         ],
@@ -190,12 +187,14 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     required String value,
     required String label,
     String? suffix,
-    Color accent = AppColors.textPrimary,
+    Color? accent,
   }) {
+    final colors = AppColors.of(context);
+    final effectiveAccent = accent ?? colors.textPrimary;
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.md),
       ),
       child: Column(
@@ -211,19 +210,22 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
                   letterSpacing: -0.5,
-                  color: accent,
+                  color: effectiveAccent,
                 ),
               ),
               if (suffix != null) ...[
                 const SizedBox(width: 4),
                 Text(suffix,
-                    style: AppText.caption
-                        .copyWith(color: AppColors.textSecondary)),
+                    style:
+                        AppText.caption.copyWith(color: colors.textSecondary)),
               ],
             ],
           ),
           const SizedBox(height: 2),
-          Text(label, style: AppText.footnote),
+          Text(
+            label,
+            style: AppText.footnote.copyWith(color: colors.textTertiary),
+          ),
         ],
       ),
     );
@@ -239,8 +241,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   ) {
     final sections = <Widget>[];
     for (final cat in categories) {
-      final catHabits =
-          habits.where((h) => h.categoryId == cat.id).toList();
+      final catHabits = habits.where((h) => h.categoryId == cat.id).toList();
       if (catHabits.isEmpty) continue;
       sections.add(_section(cat, catHabits, completions, loc));
     }
@@ -253,6 +254,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     List<HabitCompletion> completions,
     AppLocalizations loc,
   ) {
+    final colors = AppColors.of(context);
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xl),
       child: Column(
@@ -267,7 +269,8 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                 const SizedBox(width: 6),
                 Text(
                   cat.name.toUpperCase(),
-                  style: AppText.sectionLabel,
+                  style: AppText.sectionLabel
+                      .copyWith(color: colors.textSecondary),
                 ),
               ],
             ),
@@ -275,7 +278,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
           Container(
             margin: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
             decoration: BoxDecoration(
-              color: AppColors.surface,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Column(
@@ -301,6 +304,7 @@ class _StatisticsScreenState extends State<StatisticsScreen>
     List<HabitCompletion> completions,
     AppLocalizations loc,
   ) {
+    final colors = AppColors.of(context);
     final stats = _useCase.call(habit, completions, _period);
 
     return Material(
@@ -324,10 +328,10 @@ class _StatisticsScreenState extends State<StatisticsScreen>
                     ),
                   ),
                   if (stats.freezeActive)
-                    const Padding(
-                      padding: EdgeInsets.only(left: 6),
+                    Padding(
+                      padding: const EdgeInsets.only(left: 6),
                       child: Icon(Icons.ac_unit_rounded,
-                          color: AppColors.freeze, size: 14),
+                          color: colors.freeze, size: 14),
                     ),
                   if (stats.currentStreak > 0) ...[
                     const SizedBox(width: AppSpacing.sm),
@@ -345,33 +349,34 @@ class _StatisticsScreenState extends State<StatisticsScreen>
   }
 
   Widget _streakChip(int days, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
       decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
+        color: colors.surfaceElevated,
         borderRadius: BorderRadius.circular(AppRadius.pill),
       ),
       child: Text(
         '$days ${loc.daysShort}',
-        style: const TextStyle(
+        style: TextStyle(
           fontSize: 11,
           fontWeight: FontWeight.w600,
-          color: AppColors.streak,
+          color: colors.streak,
         ),
       ),
     );
   }
 
   Widget _consolidationLine(HabitStatistics stats, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     if (stats.isConsolidated) {
       return Row(
         children: [
-          const Icon(Icons.verified_rounded,
-              color: AppColors.accent, size: 14),
+          Icon(Icons.verified_rounded, color: colors.accent, size: 14),
           const SizedBox(width: 4),
           Text(
             '${loc.consolidated} · ${stats.postConsolidationStreak} ${loc.daysShort}',
-            style: AppText.footnote.copyWith(color: AppColors.accent),
+            style: AppText.footnote.copyWith(color: colors.accent),
           ),
         ],
       );
@@ -384,16 +389,19 @@ class _StatisticsScreenState extends State<StatisticsScreen>
             borderRadius: BorderRadius.circular(2),
             child: LinearProgressIndicator(
               value: stats.consolidationProgress / 21.0,
-              backgroundColor: AppColors.surfaceElevated,
+              backgroundColor: colors.surfaceElevated,
               valueColor: AlwaysStoppedAnimation<Color>(
-                stats.freezeActive ? AppColors.freeze : AppColors.accent,
+                stats.freezeActive ? colors.freeze : colors.accent,
               ),
               minHeight: 3,
             ),
           ),
         ),
         const SizedBox(width: AppSpacing.sm),
-        Text('${stats.consolidationProgress}/21', style: AppText.footnote),
+        Text(
+          '${stats.consolidationProgress}/21',
+          style: AppText.footnote.copyWith(color: colors.textTertiary),
+        ),
       ],
     );
   }

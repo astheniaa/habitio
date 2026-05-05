@@ -129,6 +129,7 @@ class UpcomingScreenState extends State<UpcomingScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final headerDate = _browseMonth ?? _selectedDate;
     final monthLabel =
         '${_localizedMonth(headerDate.month, loc)} ${headerDate.year}';
@@ -153,14 +154,13 @@ class UpcomingScreenState extends State<UpcomingScreen>
                 AnimatedRotation(
                   turns: _isExpanded ? 0.5 : 0.0,
                   duration: const Duration(milliseconds: 200),
-                  child: const Icon(Icons.keyboard_arrow_down,
-                      size: 20, color: AppColors.textTertiary),
+                  child: Icon(Icons.keyboard_arrow_down,
+                      size: 20, color: colors.textTertiary),
                 ),
               ],
             ),
           ),
         ),
-
         _CollapsibleCalendar(
           selectedDate: _selectedDate,
           today: _today,
@@ -173,9 +173,7 @@ class UpcomingScreenState extends State<UpcomingScreen>
             _browseMonth = null;
           }),
         ),
-
-        const Divider(height: 1, thickness: 0.5, color: AppColors.divider),
-
+        Divider(height: 1, thickness: 0.5, color: colors.divider),
         Expanded(child: _HabitList(selectedDate: _selectedDate)),
       ],
     );
@@ -225,8 +223,7 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
   }
 
   DateTime _monthForPage(int page) {
-    final total =
-        _baseMonthPage0.year * 12 + _baseMonthPage0.month - 1 + page;
+    final total = _baseMonthPage0.year * 12 + _baseMonthPage0.month - 1 + page;
     return DateTime(total ~/ 12, total % 12 + 1, 1);
   }
 
@@ -246,8 +243,7 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
     });
   }
 
-  double _targetH(bool expanded) =>
-      expanded ? _maxGridH : _rowH;
+  double _targetH(bool expanded) => expanded ? _maxGridH : _rowH;
 
   double _targetDy(bool expanded) =>
       expanded ? 0.0 : -_rowIndex(widget.selectedDate, _displayMonth) * _rowH;
@@ -302,7 +298,8 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
       return;
     }
 
-    if (!widget.isExpanded && !_sameDay(widget.selectedDate, old.selectedDate)) {
+    if (!widget.isExpanded &&
+        !_sameDay(widget.selectedDate, old.selectedDate)) {
       if (!_sameMonth(selMonth, _displayMonth)) _jumpToMonth(selMonth);
       _runTransition(false);
     }
@@ -325,6 +322,7 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final dayLabels = _localizedWeekdayShortNames(loc);
     return GestureDetector(
       onHorizontalDragEnd: widget.isExpanded ? null : _onStripSwipe,
@@ -338,16 +336,15 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
                   .map((n) => Expanded(
                         child: Center(
                           child: Text(n,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   fontSize: 11,
-                                  color: AppColors.textTertiary,
+                                  color: colors.textTertiary,
                                   fontWeight: FontWeight.w500)),
                         ),
                       ))
                   .toList(),
             ),
           ),
-
           AnimatedBuilder(
             animation: _animCtrl,
             builder: (context, pageView) {
@@ -382,12 +379,10 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
                     widget.onDisplayMonthChanged(m);
                   }
                 },
-                itemBuilder: (_, page) =>
-                    _buildFullGrid(_monthForPage(page)),
+                itemBuilder: (_, page) => _buildFullGrid(_monthForPage(page)),
               ),
             ),
           ),
-
           if (widget.isExpanded) const SizedBox(height: 8),
         ],
       ),
@@ -395,6 +390,7 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
   }
 
   Widget _buildFullGrid(DateTime month) {
+    final colors = AppColors.of(context);
     final start = _gridStart(month);
     final numRows = _numRows(month);
     return Padding(
@@ -419,11 +415,13 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
                         _programmaticScroll = true;
                         _currentPage = target;
                         _displayMonth = _firstOfMonth(date);
-                        _pageController.animateToPage(
+                        _pageController
+                            .animateToPage(
                           target,
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeInOut,
-                        ).then((_) {
+                        )
+                            .then((_) {
                           if (mounted) _programmaticScroll = false;
                         });
                         widget.onDisplayMonthChanged(date);
@@ -440,9 +438,9 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
                           height: 32,
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: isSel ? AppColors.accent : Colors.transparent,
+                            color: isSel ? colors.accent : Colors.transparent,
                             border: isToday && !isSel
-                                ? Border.all(color: AppColors.accent, width: 1)
+                                ? Border.all(color: colors.accent, width: 1)
                                 : null,
                           ),
                           alignment: Alignment.center,
@@ -450,12 +448,9 @@ class _CollapsibleCalendarState extends State<_CollapsibleCalendar>
                             '${date.day}',
                             style: TextStyle(
                               fontSize: 15,
-                              color: isSel
-                                  ? Colors.white
-                                  : AppColors.textPrimary,
-                              fontWeight: isToday
-                                  ? FontWeight.w600
-                                  : FontWeight.w400,
+                              color: isSel ? Colors.white : colors.textPrimary,
+                              fontWeight:
+                                  isToday ? FontWeight.w600 : FontWeight.w400,
                             ),
                           ),
                         ),
@@ -483,6 +478,7 @@ class _HabitList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     return Consumer2<HabitViewModel, CategoryViewModel>(
       builder: (context, vm, catVm, _) {
         if (vm.isLoading) {
@@ -499,13 +495,12 @@ class _HabitList extends StatelessWidget {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.event_available_outlined,
-                      size: 48,
-                      color: Colors.grey.withValues(alpha: 0.5)),
+                      size: 48, color: Colors.grey.withValues(alpha: 0.5)),
                   const SizedBox(height: 12),
                   Text(
                     loc.emptyUpcoming,
                     textAlign: TextAlign.center,
-                    style: const TextStyle(color: AppColors.textSecondary),
+                    style: TextStyle(color: colors.textSecondary),
                   ),
                 ],
               ),
@@ -545,10 +540,10 @@ class _HabitList extends StatelessWidget {
                     const SizedBox(width: 6),
                     Text(
                       c.name.toUpperCase(),
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w600,
-                        color: AppColors.textSecondary,
+                        color: colors.textSecondary,
                         letterSpacing: 0.6,
                       ),
                     ),

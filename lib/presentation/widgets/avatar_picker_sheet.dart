@@ -17,6 +17,7 @@ class AvatarPickerSheet extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final vm = context.read<UserViewModel>();
     final currentRpgId = vm.user?.avatarRpgId;
 
@@ -33,7 +34,7 @@ class AvatarPickerSheet extends StatelessWidget {
                 width: 36,
                 height: 4,
                 decoration: BoxDecoration(
-                  color: AppColors.hairline,
+                  color: colors.hairline,
                   borderRadius: BorderRadius.circular(2),
                 ),
               ),
@@ -43,13 +44,18 @@ class AvatarPickerSheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
 
             // ── Photo ───────────────────────────────────────────────────────
-            Text(loc.fromGallery.toUpperCase(), style: AppText.sectionLabel),
+            Text(
+              loc.fromGallery.toUpperCase(),
+              style: AppText.sectionLabel.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             ListTile(
               contentPadding: EdgeInsets.zero,
-              leading: const CircleAvatar(
-                backgroundColor: AppColors.surface,
-                child: Icon(Icons.image_outlined, color: AppColors.accent),
+              leading: CircleAvatar(
+                backgroundColor: colors.surface,
+                child: Icon(Icons.image_outlined, color: colors.accent),
               ),
               title: Text(loc.choosePhoto, style: AppText.body),
               onTap: () async {
@@ -71,8 +77,12 @@ class AvatarPickerSheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
 
             // ── RPG avatars ────────────────────────────────────────────────
-            Text(loc.rpgAvatarsTitle.toUpperCase(),
-                style: AppText.sectionLabel),
+            Text(
+              loc.rpgAvatarsTitle.toUpperCase(),
+              style: AppText.sectionLabel.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             SizedBox(
               height: 64,
@@ -97,11 +107,9 @@ class AvatarPickerSheet extends StatelessWidget {
                       height: 56,
                       decoration: BoxDecoration(
                         shape: BoxShape.circle,
-                        color: AppColors.surface,
+                        color: colors.surface,
                         border: Border.all(
-                          color: isSelected
-                              ? AppColors.accent
-                              : AppColors.divider,
+                          color: isSelected ? colors.accent : colors.divider,
                           width: isSelected ? 2 : 0.5,
                         ),
                       ),
@@ -116,8 +124,12 @@ class AvatarPickerSheet extends StatelessWidget {
             const SizedBox(height: AppSpacing.xl),
 
             // ── Language toggle ────────────────────────────────────────────
-            Text(loc.languageLabel.toUpperCase(),
-                style: AppText.sectionLabel),
+            Text(
+              loc.languageLabel.toUpperCase(),
+              style: AppText.sectionLabel.copyWith(
+                color: colors.textSecondary,
+              ),
+            ),
             const SizedBox(height: AppSpacing.sm),
             const _LanguageToggle(),
             const SizedBox(height: AppSpacing.sm),
@@ -135,6 +147,7 @@ class _LanguageToggle extends StatelessWidget {
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
     final localeVm = context.watch<LocaleProvider>();
+    final colors = AppColors.of(context);
     final code = localeVm.locale?.languageCode ??
         Localizations.localeOf(context).languageCode;
 
@@ -142,15 +155,14 @@ class _LanguageToggle extends StatelessWidget {
       final active = code == langCode;
       return Expanded(
         child: GestureDetector(
-          onTap: () => context
-              .read<LocaleProvider>()
-              .setLocale(Locale(langCode)),
+          onTap: () =>
+              context.read<LocaleProvider>().setLocale(Locale(langCode)),
           behavior: HitTestBehavior.opaque,
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             padding: const EdgeInsets.symmetric(vertical: 10),
             decoration: BoxDecoration(
-              color: active ? AppColors.surfaceElevated : Colors.transparent,
+              color: active ? colors.surfaceElevated : Colors.transparent,
               borderRadius: BorderRadius.circular(6),
             ),
             child: Center(
@@ -159,9 +171,7 @@ class _LanguageToggle extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                  color: active
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
+                  color: active ? colors.textPrimary : colors.textSecondary,
                 ),
               ),
             ),
@@ -172,7 +182,7 @@ class _LanguageToggle extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       padding: const EdgeInsets.all(3),

@@ -46,10 +46,10 @@ class HabitListItemState extends State<HabitListItem>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
-    _sizeFactor = Tween<double>(begin: 1.0, end: 0.0).animate(
-        CurvedAnimation(parent: _dismissCtrl, curve: Curves.easeOut));
-    _fadeOut = Tween<double>(begin: 1.0, end: 0.0).animate(
-        CurvedAnimation(parent: _dismissCtrl, curve: Curves.easeOut));
+    _sizeFactor = Tween<double>(begin: 1.0, end: 0.0)
+        .animate(CurvedAnimation(parent: _dismissCtrl, curve: Curves.easeOut));
+    _fadeOut = Tween<double>(begin: 1.0, end: 0.0)
+        .animate(CurvedAnimation(parent: _dismissCtrl, curve: Curves.easeOut));
 
     if (widget.isPending) {
       _dismissCtrl.value = 1.0;
@@ -84,6 +84,7 @@ class HabitListItemState extends State<HabitListItem>
   @override
   Widget build(BuildContext context) {
     final isDone = widget.isCompletedToday || _completionVisual;
+    final colors = AppColors.of(context);
     final category =
         context.watch<CategoryViewModel>().byId(widget.habit.categoryId);
 
@@ -98,7 +99,7 @@ class HabitListItemState extends State<HabitListItem>
             padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.lg, vertical: 4),
             child: Material(
-              color: AppColors.surface,
+              color: colors.surface,
               borderRadius: BorderRadius.circular(AppRadius.md),
               child: InkWell(
                 onTap: widget.onEdit,
@@ -118,16 +119,17 @@ class HabitListItemState extends State<HabitListItem>
                               widget.habit.title,
                               style: AppText.body.copyWith(
                                 fontWeight: FontWeight.w500,
-                                decoration: isDone
-                                    ? TextDecoration.lineThrough
-                                    : null,
-                                decorationColor: AppColors.textTertiary,
+                                decoration:
+                                    isDone ? TextDecoration.lineThrough : null,
+                                decorationColor: colors.textTertiary,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               category?.name ?? '',
-                              style: AppText.footnote,
+                              style: AppText.footnote.copyWith(
+                                color: colors.textTertiary,
+                              ),
                             ),
                           ],
                         ),
@@ -164,13 +166,14 @@ class _CategoryIcon extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return Container(
       width: 28,
       height: 28,
       alignment: Alignment.center,
-      decoration: const BoxDecoration(
+      decoration: BoxDecoration(
         shape: BoxShape.circle,
-        color: AppColors.surfaceElevated,
+        color: colors.surfaceElevated,
       ),
       child: Text(emoji, style: const TextStyle(fontSize: 16)),
     );
@@ -189,6 +192,7 @@ class _CompletionIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: onTap,
       behavior: HitTestBehavior.opaque,
@@ -200,15 +204,14 @@ class _CompletionIndicator extends StatelessWidget {
           height: 26,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: completed ? AppColors.accent : Colors.transparent,
+            color: completed ? colors.accent : Colors.transparent,
             border: Border.all(
-              color: completed ? AppColors.accent : AppColors.textTertiary,
+              color: completed ? colors.accent : colors.textTertiary,
               width: 1.5,
             ),
           ),
           child: completed
-              ? const Icon(Icons.check_rounded,
-                  color: Colors.white, size: 18)
+              ? const Icon(Icons.check_rounded, color: Colors.white, size: 18)
               : null,
         ),
       ),
@@ -226,6 +229,7 @@ class _CounterAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<HabitViewModel>();
+    final colors = AppColors.of(context);
     final progress = vm.todayProgressFor(habit);
     final target = habit.targetValue;
 
@@ -236,7 +240,7 @@ class _CounterAction extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.surfaceElevated,
+          color: colors.surfaceElevated,
           borderRadius: BorderRadius.circular(AppRadius.pill),
         ),
         child: Row(
@@ -244,15 +248,14 @@ class _CounterAction extends StatelessWidget {
           children: [
             Text(
               '$progress / $target',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
-                color: AppColors.textPrimary,
+                color: colors.textPrimary,
               ),
             ),
             const SizedBox(width: 6),
-            const Icon(Icons.add_rounded,
-                color: AppColors.accent, size: 16),
+            Icon(Icons.add_rounded, color: colors.accent, size: 16),
           ],
         ),
       ),

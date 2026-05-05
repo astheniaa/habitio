@@ -27,6 +27,7 @@ class _LifeScreenState extends State<LifeScreen>
   Widget build(BuildContext context) {
     super.build(context);
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     return Consumer<HabitViewModel>(
       builder: (context, vm, _) {
         if (vm.isLoading) {
@@ -41,7 +42,7 @@ class _LifeScreenState extends State<LifeScreen>
               child: Text(
                 loc.emptyToday,
                 textAlign: TextAlign.center,
-                style: const TextStyle(color: AppColors.textSecondary),
+                style: TextStyle(color: colors.textSecondary),
               ),
             ),
           );
@@ -103,17 +104,17 @@ class _LifeScreenState extends State<LifeScreen>
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
   }
 
-  void _showUndoSnackbar(
-      HabitViewModel vm, Habit habit, AppLocalizations loc) {
+  void _showUndoSnackbar(HabitViewModel vm, Habit habit, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        backgroundColor: AppColors.surface,
+        backgroundColor: colors.surface,
         behavior: SnackBarBehavior.floating,
         margin: const EdgeInsets.only(left: 16, bottom: 24, right: 80),
         padding: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(14),
-          side: const BorderSide(color: AppColors.divider, width: 0.5),
+          side: BorderSide(color: colors.divider, width: 0.5),
         ),
         duration: const Duration(seconds: 4),
         content: GestureDetector(
@@ -123,9 +124,9 @@ class _LifeScreenState extends State<LifeScreen>
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(
+                Icon(
                   Icons.undo_rounded,
-                  color: AppColors.destructive,
+                  color: colors.destructive,
                   size: 22,
                 ),
                 const SizedBox(width: 12),
@@ -135,8 +136,8 @@ class _LifeScreenState extends State<LifeScreen>
                   children: [
                     Text(
                       loc.undo,
-                      style: const TextStyle(
-                        color: AppColors.destructive,
+                      style: TextStyle(
+                        color: colors.destructive,
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
                       ),
@@ -144,8 +145,8 @@ class _LifeScreenState extends State<LifeScreen>
                     const SizedBox(height: 2),
                     Text(
                       loc.doneLabel,
-                      style: const TextStyle(
-                        color: AppColors.textSecondary,
+                      style: TextStyle(
+                        color: colors.textSecondary,
                         fontSize: 13,
                       ),
                     ),

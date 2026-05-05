@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../theme/app_colors.dart';
 import '../widgets/bottom_nav_bar.dart';
 import '../widgets/top_user_panel.dart';
 import 'habit_edit_sheet.dart';
@@ -64,23 +65,23 @@ class _HomeShellState extends State<HomeShell>
     }
   }
 
-  static const _scaffoldBg = Color(0xFF121212);
-
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
+
     return Scaffold(
       body: NestedScrollView(
-        headerSliverBuilder: (context, _) => const [
+        headerSliverBuilder: (context, _) => [
           SliverAppBar(
             floating: true,
             snap: true,
             pinned: false,
             automaticallyImplyLeading: false,
             elevation: 0,
-            backgroundColor: _scaffoldBg,
+            backgroundColor: colors.background,
             toolbarHeight: 78,
             titleSpacing: 0,
-            title: TopUserPanel(),
+            title: const TopUserPanel(),
           ),
         ],
         body: TabBarView(
@@ -104,7 +105,7 @@ class _HomeShellState extends State<HomeShell>
           ignoring: _currentIndex == 2,
           child: FloatingActionButton(
             onPressed: _onFabPressed,
-            backgroundColor: const Color(0xFF4CAF50),
+            backgroundColor: colors.accent,
             child: const Icon(Icons.add, color: Colors.white, size: 28),
           ),
         ),

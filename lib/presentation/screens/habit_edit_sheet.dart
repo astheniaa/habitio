@@ -55,9 +55,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
             : HabitScheduleType.everyday);
     _selectedWeekdays = h != null
         ? Set<int>.from(h.weekdays)
-        : (widget.initialWeekday != null
-            ? {widget.initialWeekday!}
-            : <int>{});
+        : (widget.initialWeekday != null ? {widget.initialWeekday!} : <int>{});
   }
 
   @override
@@ -71,6 +69,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final categories = context.watch<CategoryViewModel>().categories;
 
     // Default to first category on first build for new habits.
@@ -143,8 +142,8 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                       padding: const EdgeInsets.only(top: 6),
                       child: Text(
                         loc.validationWeekdayRequired,
-                        style: const TextStyle(
-                          color: AppColors.destructive,
+                        style: TextStyle(
+                          color: colors.destructive,
                           fontSize: 12,
                         ),
                       ),
@@ -159,26 +158,25 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                       TextButton(
                         onPressed: _delete,
                         style: TextButton.styleFrom(
-                            foregroundColor: AppColors.destructive),
+                            foregroundColor: colors.destructive),
                         child: Text(loc.delete),
                       ),
                     const Spacer(),
                     TextButton(
                       onPressed: () => Navigator.of(context).pop(),
                       style: TextButton.styleFrom(
-                          foregroundColor: AppColors.textSecondary),
+                          foregroundColor: colors.textSecondary),
                       child: Text(loc.cancel),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     ElevatedButton(
                       onPressed: _save,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.accent,
+                        backgroundColor: colors.accent,
                         foregroundColor: Colors.white,
                         elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(AppRadius.sm),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                       ),
                       child: Text(loc.save),
@@ -195,40 +193,50 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
 
   // ── Building blocks ──────────────────────────────────────────────────────
 
-  Widget _grabHandle() => Center(
-        child: Container(
-          width: 36,
-          height: 4,
-          decoration: BoxDecoration(
-            color: AppColors.hairline,
-            borderRadius: BorderRadius.circular(2),
-          ),
+  Widget _grabHandle() {
+    final colors = AppColors.of(context);
+    return Center(
+      child: Container(
+        width: 36,
+        height: 4,
+        decoration: BoxDecoration(
+          color: colors.hairline,
+          borderRadius: BorderRadius.circular(2),
         ),
-      );
+      ),
+    );
+  }
 
-  Widget _label(String text) => Text(
-        text.toUpperCase(),
-        style: AppText.sectionLabel,
-      );
+  Widget _label(String text) {
+    final colors = AppColors.of(context);
+    return Text(
+      text.toUpperCase(),
+      style: AppText.sectionLabel.copyWith(color: colors.textSecondary),
+    );
+  }
 
-  InputDecoration _inputDecoration({String? hint}) => InputDecoration(
-        hintText: hint,
-        hintStyle: AppText.body.copyWith(color: AppColors.textTertiary),
-        filled: true,
-        fillColor: AppColors.surface,
-        contentPadding: const EdgeInsets.symmetric(
-            horizontal: AppSpacing.md, vertical: AppSpacing.md),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          borderSide: BorderSide.none,
-        ),
-        focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          borderSide: const BorderSide(color: AppColors.accent, width: 1),
-        ),
-      );
+  InputDecoration _inputDecoration({String? hint}) {
+    final colors = AppColors.of(context);
+    return InputDecoration(
+      hintText: hint,
+      hintStyle: AppText.body.copyWith(color: colors.textTertiary),
+      filled: true,
+      fillColor: colors.surface,
+      contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.md),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderSide: BorderSide.none,
+      ),
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        borderSide: BorderSide(color: colors.accent, width: 1),
+      ),
+    );
+  }
 
   Widget _categoryPicker(List<Category> categories, AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return SizedBox(
       height: 64,
       child: ListView.separated(
@@ -248,15 +256,12 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 150),
               constraints: const BoxConstraints(minWidth: 64),
-              padding: const EdgeInsets.symmetric(
-                  horizontal: 12, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: selected
-                    ? AppColors.accentMuted
-                    : AppColors.surface,
+                color: selected ? colors.accentMuted : colors.surface,
                 borderRadius: BorderRadius.circular(AppRadius.md),
                 border: selected
-                    ? Border.all(color: AppColors.accent, width: 1)
+                    ? Border.all(color: colors.accent, width: 1)
                     : null,
               ),
               child: Column(
@@ -266,10 +271,10 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                   const SizedBox(height: 2),
                   Text(
                     cat.name,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w500,
-                      color: AppColors.textPrimary,
+                      color: colors.textPrimary,
                     ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
@@ -284,9 +289,10 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
   }
 
   Widget _habitTypeSegment(AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       padding: const EdgeInsets.all(3),
@@ -315,6 +321,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
     required bool active,
     required VoidCallback onTap,
   }) {
+    final colors = AppColors.of(context);
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -323,7 +330,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 8),
           decoration: BoxDecoration(
-            color: active ? AppColors.surfaceElevated : Colors.transparent,
+            color: active ? colors.surfaceElevated : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Column(
@@ -333,9 +340,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                 style: TextStyle(
                   fontSize: 13,
                   fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                  color: active
-                      ? AppColors.textPrimary
-                      : AppColors.textSecondary,
+                  color: active ? colors.textPrimary : colors.textSecondary,
                 ),
               ),
               const SizedBox(height: 1),
@@ -343,9 +348,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
                 sublabel,
                 style: TextStyle(
                   fontSize: 10,
-                  color: active
-                      ? AppColors.textSecondary
-                      : AppColors.textTertiary,
+                  color: active ? colors.textSecondary : colors.textTertiary,
                 ),
               ),
             ],
@@ -403,9 +406,10 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
   }
 
   Widget _scheduleSegment(AppLocalizations loc) {
+    final colors = AppColors.of(context);
     return Container(
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colors.surface,
         borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       padding: const EdgeInsets.all(3),
@@ -435,6 +439,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
     required bool active,
     required VoidCallback onTap,
   }) {
+    final colors = AppColors.of(context);
     return Expanded(
       child: GestureDetector(
         onTap: onTap,
@@ -443,7 +448,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.symmetric(vertical: 10),
           decoration: BoxDecoration(
-            color: active ? AppColors.surfaceElevated : Colors.transparent,
+            color: active ? colors.surfaceElevated : Colors.transparent,
             borderRadius: BorderRadius.circular(6),
           ),
           child: Center(
@@ -452,9 +457,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
               style: TextStyle(
                 fontSize: 13,
                 fontWeight: active ? FontWeight.w600 : FontWeight.w500,
-                color: active
-                    ? AppColors.textPrimary
-                    : AppColors.textSecondary,
+                color: active ? colors.textPrimary : colors.textSecondary,
               ),
             ),
           ),
@@ -464,6 +467,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
   }
 
   Widget _weekdayChips(AppLocalizations loc) {
+    final colors = AppColors.of(context);
     final labels = [
       loc.weekdayMon,
       loc.weekdayTue,
@@ -499,9 +503,9 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
             alignment: Alignment.center,
             decoration: BoxDecoration(
               shape: BoxShape.circle,
-              color: isSelected ? AppColors.accent : AppColors.surface,
+              color: isSelected ? colors.accent : colors.surface,
               border: isToday && !isSelected
-                  ? Border.all(color: AppColors.accent, width: 1)
+                  ? Border.all(color: colors.accent, width: 1)
                   : null,
             ),
             child: Text(
@@ -509,9 +513,7 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w600,
-                color: isSelected
-                    ? Colors.white
-                    : AppColors.textPrimary,
+                color: isSelected ? Colors.white : colors.textPrimary,
               ),
             ),
           ),
@@ -527,8 +529,8 @@ class _HabitEditSheetState extends State<HabitEditSheet> {
     if (!_formKey.currentState!.validate()) return;
 
     if (_categoryId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-          content: Text(loc.validationCategoryRequired)));
+      ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(loc.validationCategoryRequired)));
       return;
     }
 
@@ -585,6 +587,7 @@ class _CategoryManageChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colors = AppColors.of(context);
     return GestureDetector(
       onTap: () => Navigator.of(context).push(
         MaterialPageRoute(builder: (_) => const CategoryManagerScreen()),
@@ -593,22 +596,21 @@ class _CategoryManageChip extends StatelessWidget {
         constraints: const BoxConstraints(minWidth: 64),
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: colors.surface,
           borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: AppColors.divider, width: 0.5),
+          border: Border.all(color: colors.divider, width: 0.5),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.tune_rounded,
-                size: 22, color: AppColors.textSecondary),
+            Icon(Icons.tune_rounded, size: 22, color: colors.textSecondary),
             const SizedBox(height: 2),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
-                color: AppColors.textSecondary,
+                color: colors.textSecondary,
               ),
               maxLines: 1,
               overflow: TextOverflow.ellipsis,

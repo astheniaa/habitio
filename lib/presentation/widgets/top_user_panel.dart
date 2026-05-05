@@ -7,6 +7,7 @@ import 'package:provider/provider.dart';
 
 import '../../domain/models/entities/user.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../state/theme_provider.dart';
 import '../state/user_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
@@ -127,8 +128,7 @@ class _TopUserPanelState extends State<TopUserPanel>
       _ctrl.duration = const Duration(milliseconds: 600);
       final curved1 = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
       _barAnim = Tween<double>(begin: fromBar, end: 1.0).animate(curved1);
-      _xpNumAnim =
-          IntTween(begin: fromXp, end: fillDenom).animate(curved1);
+      _xpNumAnim = IntTween(begin: fromXp, end: fillDenom).animate(curved1);
       await _ctrl.forward(from: 0).orCancel;
       if (!mounted) return;
 
@@ -167,8 +167,7 @@ class _TopUserPanelState extends State<TopUserPanel>
       _ctrl.duration = const Duration(milliseconds: 800);
       final curved4 = CurvedAnimation(parent: _ctrl, curve: Curves.easeOut);
       _barAnim = Tween<double>(begin: 0.0, end: toBar).animate(curved4);
-      _xpNumAnim =
-          IntTween(begin: 0, end: user.currentXp).animate(curved4);
+      _xpNumAnim = IntTween(begin: 0, end: user.currentXp).animate(curved4);
       _ctrl.forward(from: 0);
     } on TickerCanceled {
       _dismissLevelUpOverlay();
@@ -179,6 +178,7 @@ class _TopUserPanelState extends State<TopUserPanel>
 
   void _showLevelUpOverlay(int newLevel) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     _overlayEntry = OverlayEntry(
       builder: (_) => GestureDetector(
         behavior: HitTestBehavior.opaque,
@@ -195,8 +195,8 @@ class _TopUserPanelState extends State<TopUserPanel>
               children: [
                 Text(
                   loc.levelUpBadge,
-                  style: const TextStyle(
-                    color: AppColors.accent,
+                  style: TextStyle(
+                    color: colors.accent,
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     letterSpacing: 1.4,
@@ -205,8 +205,8 @@ class _TopUserPanelState extends State<TopUserPanel>
                 const SizedBox(height: AppSpacing.md),
                 Text(
                   '${loc.level} $newLevel',
-                  style: const TextStyle(
-                    color: AppColors.textPrimary,
+                  style: TextStyle(
+                    color: colors.textPrimary,
                     fontSize: 56,
                     fontWeight: FontWeight.w700,
                     letterSpacing: -1,
@@ -215,8 +215,8 @@ class _TopUserPanelState extends State<TopUserPanel>
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   loc.levelUpSub,
-                  style: const TextStyle(
-                    color: AppColors.textSecondary,
+                  style: TextStyle(
+                    color: colors.textSecondary,
                     fontSize: 15,
                   ),
                 ),
@@ -238,10 +238,11 @@ class _TopUserPanelState extends State<TopUserPanel>
   // ── Gesture handlers ──────────────────────────────────────────────────────
 
   void _onAvatarTap() {
+    final colors = AppColors.of(context);
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: AppColors.surface,
+      backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -291,6 +292,7 @@ class _TopUserPanelState extends State<TopUserPanel>
   // ── Avatar widget ──────────────────────────────────────────────────────────
 
   Widget _buildAvatarContent(User? user) {
+    final colors = AppColors.of(context);
     final name = user?.name ?? '';
     final avatarPath = user?.avatarPath;
     final avatarRpgId = user?.avatarRpgId;
@@ -305,7 +307,7 @@ class _TopUserPanelState extends State<TopUserPanel>
       );
     } else if (avatarRpgId != null && avatarRpgId.isNotEmpty) {
       return Container(
-        color: AppColors.surface,
+        color: colors.surface,
         alignment: Alignment.center,
         child: Text(avatarRpgId, style: const TextStyle(fontSize: 24)),
       );
@@ -315,14 +317,15 @@ class _TopUserPanelState extends State<TopUserPanel>
   }
 
   Widget _buildInitialAvatar(String name) {
+    final colors = AppColors.of(context);
     final initial = name.isNotEmpty ? name[0].toUpperCase() : '?';
     return Container(
-      color: AppColors.surface,
+      color: colors.surface,
       alignment: Alignment.center,
       child: Text(
         initial,
-        style: const TextStyle(
-          color: AppColors.textPrimary,
+        style: TextStyle(
+          color: colors.textPrimary,
           fontSize: 18,
           fontWeight: FontWeight.w600,
         ),
@@ -335,6 +338,7 @@ class _TopUserPanelState extends State<TopUserPanel>
   @override
   Widget build(BuildContext context) {
     final vm = context.watch<UserViewModel>();
+    final colors = AppColors.of(context);
 
     if (vm.isLoading && _prevUser == null) {
       return const SizedBox(
@@ -359,9 +363,9 @@ class _TopUserPanelState extends State<TopUserPanel>
             child: Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
+              decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: AppColors.surface,
+                color: colors.surface,
               ),
               child: ClipOval(child: _buildAvatarContent(user)),
             ),
@@ -394,8 +398,8 @@ class _TopUserPanelState extends State<TopUserPanel>
                       child: Text(
                         key: ValueKey(_displayLevel),
                         '· ${loc.level} $_displayLevel',
-                        style: const TextStyle(
-                          color: AppColors.textTertiary,
+                        style: TextStyle(
+                          color: colors.textTertiary,
                           fontSize: 13,
                           fontWeight: FontWeight.w500,
                         ),
@@ -410,21 +414,62 @@ class _TopUserPanelState extends State<TopUserPanel>
                   child: LinearProgressIndicator(
                     value: _barAnim.value.clamp(0.0, 1.0),
                     minHeight: 4,
-                    backgroundColor: AppColors.surface,
-                    valueColor:
-                        const AlwaysStoppedAnimation(AppColors.accent),
+                    backgroundColor: colors.surface,
+                    valueColor: AlwaysStoppedAnimation(colors.accent),
                   ),
                 ),
                 const SizedBox(height: 4),
                 // XP text
                 Text(
                   '${_xpNumAnim.value} / $_displayDenom ${loc.xp}',
-                  style: AppText.footnote,
+                  style: AppText.footnote.copyWith(color: colors.textTertiary),
                 ),
               ],
             ),
           ),
+          const SizedBox(width: AppSpacing.sm),
+          const _ThemeToggle(),
         ],
+      ),
+    );
+  }
+}
+
+class _ThemeToggle extends StatelessWidget {
+  const _ThemeToggle();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = context.watch<ThemeProvider>();
+    final colors = AppColors.of(context);
+    final icon =
+        theme.isNight ? Icons.light_mode_rounded : Icons.dark_mode_rounded;
+    final iconColor = theme.isNight ? colors.best : colors.freeze;
+
+    return Tooltip(
+      message: theme.isNight ? 'Switch to day theme' : 'Switch to night theme',
+      child: Material(
+        color: colors.surface,
+        shape: CircleBorder(
+          side: BorderSide(color: colors.divider, width: 0.5),
+        ),
+        child: InkWell(
+          customBorder: const CircleBorder(),
+          onTap: () => context.read<ThemeProvider>().toggle(),
+          child: SizedBox(
+            width: 40,
+            height: 40,
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 180),
+              child: Icon(
+                icon,
+                key: ValueKey(theme.isNight),
+                color: iconColor,
+                size: 20,
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

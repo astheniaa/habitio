@@ -18,6 +18,7 @@ class BottomNavBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final items = [
       _NavItem(
         label: loc.todayTab,
@@ -37,9 +38,9 @@ class BottomNavBar extends StatelessWidget {
     ];
 
     return Container(
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        border: Border(top: BorderSide(color: AppColors.divider, width: 0.5)),
+      decoration: BoxDecoration(
+        color: colors.background,
+        border: Border(top: BorderSide(color: colors.divider, width: 0.5)),
       ),
       child: SafeArea(
         top: false,
@@ -49,8 +50,7 @@ class BottomNavBar extends StatelessWidget {
             children: List.generate(items.length, (index) {
               final item = items[index];
               final isActive = index == currentIndex;
-              final color =
-                  isActive ? AppColors.accent : AppColors.textTertiary;
+              final color = isActive ? colors.accent : colors.textTertiary;
 
               return Expanded(
                 child: InkWell(

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../l10n/generated/app_localizations.dart';
 import '../theme/app_colors.dart';
+import '../theme/app_palette.dart';
 
 /// GitHub-style contribution grid.
 /// [data] maps dates to completed (true) / missed (false).
@@ -20,13 +21,11 @@ class ContributionGrid extends StatelessWidget {
 
   static const _cellSize = 14.0;
   static const _cellGap = 3.0;
-  static const _completedColor = AppColors.accent;
-  static const _missedColor = Color(0xFF5C3A3A);
-  static const _notScheduledColor = AppColors.surface;
 
   @override
   Widget build(BuildContext context) {
     final loc = AppLocalizations.of(context)!;
+    final colors = AppColors.of(context);
     final dayLabels = [
       loc.weekdayMon,
       loc.weekdayTue,
@@ -38,8 +37,8 @@ class ContributionGrid extends StatelessWidget {
     ];
 
     // Align to Monday start
-    final firstMonday = periodStart
-        .subtract(Duration(days: (periodStart.weekday - 1) % 7));
+    final firstMonday =
+        periodStart.subtract(Duration(days: (periodStart.weekday - 1) % 7));
 
     final weeks = <List<DateTime?>>[];
     var d = firstMonday;
@@ -72,9 +71,9 @@ class ContributionGrid extends StatelessWidget {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     dayLabels[i],
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 9,
-                      color: AppColors.textTertiary,
+                      color: colors.textTertiary,
                     ),
                   ),
                 ),
@@ -90,7 +89,7 @@ class ContributionGrid extends StatelessWidget {
                     padding: const EdgeInsets.only(bottom: _cellGap),
                     child: _Cell(
                       size: _cellSize,
-                      color: _colorForDay(day),
+                      color: _colorForDay(day, colors),
                     ),
                   );
                 }).toList(),
@@ -102,13 +101,13 @@ class ContributionGrid extends StatelessWidget {
     );
   }
 
-  Color _colorForDay(DateTime? day) {
+  Color _colorForDay(DateTime? day, AppPalette colors) {
     if (day == null) return Colors.transparent;
     final normalized = DateTime(day.year, day.month, day.day);
     if (data.containsKey(normalized)) {
-      return data[normalized]! ? _completedColor : _missedColor;
+      return data[normalized]! ? colors.accent : colors.missed;
     }
-    return _notScheduledColor;
+    return colors.surface;
   }
 }
 
