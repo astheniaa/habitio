@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import '../../l10n/generated/app_localizations.dart';
+import '../theme/app_colors.dart';
+
 /// GitHub-style contribution grid.
 /// [data] maps dates to completed (true) / missed (false).
 /// Days not in the map are shown as "not scheduled" (dimmed).
@@ -17,18 +20,27 @@ class ContributionGrid extends StatelessWidget {
 
   static const _cellSize = 14.0;
   static const _cellGap = 3.0;
-  static const _completedColor = Color(0xFF4CAF50);
+  static const _completedColor = AppColors.accent;
   static const _missedColor = Color(0xFF5C3A3A);
-  static const _notScheduledColor = Color(0xFF1E1E1E);
-  static const _dayLabels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'];
+  static const _notScheduledColor = AppColors.surface;
 
   @override
   Widget build(BuildContext context) {
+    final loc = AppLocalizations.of(context)!;
+    final dayLabels = [
+      loc.weekdayMon,
+      loc.weekdayTue,
+      loc.weekdayWed,
+      loc.weekdayThu,
+      loc.weekdayFri,
+      loc.weekdaySat,
+      loc.weekdaySun,
+    ];
+
     // Align to Monday start
     final firstMonday = periodStart
         .subtract(Duration(days: (periodStart.weekday - 1) % 7));
 
-    // Build list of weeks (columns)
     final weeks = <List<DateTime?>>[];
     var d = firstMonday;
     while (!d.isAfter(periodEnd)) {
@@ -36,7 +48,7 @@ class ContributionGrid extends StatelessWidget {
       for (int i = 0; i < 7; i++) {
         final day = d.add(Duration(days: i));
         if (day.isBefore(periodStart) || day.isAfter(periodEnd)) {
-          week.add(null); // outside range
+          week.add(null);
         } else {
           week.add(day);
         }
@@ -47,11 +59,10 @@ class ContributionGrid extends StatelessWidget {
 
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
-      reverse: true, // most recent weeks on the right, scroll starts at end
+      reverse: true,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Day labels column
           Column(
             children: List.generate(7, (i) {
               return SizedBox(
@@ -60,17 +71,16 @@ class ContributionGrid extends StatelessWidget {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Text(
-                    _dayLabels[i],
+                    dayLabels[i],
                     style: const TextStyle(
                       fontSize: 9,
-                      color: Color(0xFF888888),
+                      color: AppColors.textTertiary,
                     ),
                   ),
                 ),
               );
             }),
           ),
-          // Grid columns
           ...weeks.map((week) {
             return Padding(
               padding: const EdgeInsets.only(right: _cellGap),
@@ -94,7 +104,7 @@ class ContributionGrid extends StatelessWidget {
 
   Color _colorForDay(DateTime? day) {
     if (day == null) return Colors.transparent;
-    final normalized = DateTime.utc(day.year, day.month, day.day);
+    final normalized = DateTime(day.year, day.month, day.day);
     if (data.containsKey(normalized)) {
       return data[normalized]! ? _completedColor : _missedColor;
     }

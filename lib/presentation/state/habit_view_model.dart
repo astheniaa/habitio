@@ -149,8 +149,8 @@ class HabitViewModel extends ChangeNotifier {
 
     if (existing == null) {
       // Brand-new row at progress = 1
-      final wasComplete = false;
-      final newProgress = 1;
+      const wasComplete = false;
+      const newProgress = 1;
       final isComplete = newProgress >= habit.targetValue;
       final row = HabitCompletion(
         habitId: habit.id!,
