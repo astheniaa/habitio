@@ -122,5 +122,76 @@
   "monthSep": "Сентябрь",
   "monthOct": "Октябрь",
   "monthNov": "Ноябрь",
-  "monthDec": "Декабрь"
+  "monthDec": "Декабрь",
+
+  "profileTitle": "Профиль",
+  "profileChangeAvatar": "Сменить аватар",
+  "profileTapToCustomize": "Нажмите, чтобы настроить",
+  "profileStatCurrentStreak": "Текущая серия",
+  "profileStatCompletedToday": "Выполнено сегодня",
+  "profileStatBestStreak": "Лучшая серия",
+  "profileSkillsTitle": "Навыки",
+  "profileSkillsSubtitle": "За последние 14 дней",
+  "profileSkillsEmpty": "Добавьте привычки, чтобы видеть прогресс",
+  "profileInsightsTitle": "Наблюдения",
+  "profileRecentTitle": "Сегодня",
+  "profileRecentEmpty": "На сегодня привычек нет",
+  "@profileRecentDoneOf": {
+    "placeholders": {
+      "done": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "profileRecentDoneOf": "{done} из {total} выполнено",
+  "profileSettingsTitle": "Настройки",
+  "profileThemeLabel": "Тема",
+  "profileThemeDay": "День",
+  "profileThemeNight": "Ночь",
+  "profileManageCategories": "Категории",
+  "@insightStreak": {
+    "placeholders": {
+      "days": { "type": "int" }
+    }
+  },
+  "insightStreak": "Серия из {days} дней — продолжайте в том же духе.",
+  "insightNoStreak": "Выполните привычку, чтобы начать серию.",
+  "@insightStrongCategory": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "int" }
+    }
+  },
+  "insightStrongCategory": "Лучше всего идёт «{category}» — {percent}%.",
+  "@insightWeakCategory": {
+    "placeholders": {
+      "category": { "type": "String" },
+      "percent": { "type": "int" }
+    }
+  },
+  "insightWeakCategory": "«{category}» проседает — всего {percent}%.",
+  "@insightStrongDay": {
+    "placeholders": {
+      "weekday": { "type": "String" }
+    }
+  },
+  "insightStrongDay": "Самый продуктивный день — {weekday}.",
+  "@insightWeakDay": {
+    "placeholders": {
+      "weekday": { "type": "String" }
+    }
+  },
+  "insightWeakDay": "{weekday} обычно даётся тяжелее.",
+  "@insightTrendUp": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "insightTrendUp": "На этой неделе на {percent}% больше, чем на прошлой.",
+  "@insightTrendDown": {
+    "placeholders": {
+      "percent": { "type": "int" }
+    }
+  },
+  "insightTrendDown": "На этой неделе на {percent}% меньше, чем на прошлой.",
+  "insightWelcome": "Добавьте первую привычку — и здесь появятся наблюдения."
 }

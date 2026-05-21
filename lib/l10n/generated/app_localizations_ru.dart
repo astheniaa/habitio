@@ -315,4 +315,102 @@ class AppLocalizationsRu extends AppLocalizations {
 
   @override
   String get monthDec => 'Декабрь';
+
+  @override
+  String get profileTitle => 'Профиль';
+
+  @override
+  String get profileChangeAvatar => 'Сменить аватар';
+
+  @override
+  String get profileTapToCustomize => 'Нажмите, чтобы настроить';
+
+  @override
+  String get profileStatCurrentStreak => 'Текущая серия';
+
+  @override
+  String get profileStatCompletedToday => 'Выполнено сегодня';
+
+  @override
+  String get profileStatBestStreak => 'Лучшая серия';
+
+  @override
+  String get profileSkillsTitle => 'Навыки';
+
+  @override
+  String get profileSkillsSubtitle => 'За последние 14 дней';
+
+  @override
+  String get profileSkillsEmpty => 'Добавьте привычки, чтобы видеть прогресс';
+
+  @override
+  String get profileInsightsTitle => 'Наблюдения';
+
+  @override
+  String get profileRecentTitle => 'Сегодня';
+
+  @override
+  String get profileRecentEmpty => 'На сегодня привычек нет';
+
+  @override
+  String profileRecentDoneOf(int done, int total) {
+    return '$done из $total выполнено';
+  }
+
+  @override
+  String get profileSettingsTitle => 'Настройки';
+
+  @override
+  String get profileThemeLabel => 'Тема';
+
+  @override
+  String get profileThemeDay => 'День';
+
+  @override
+  String get profileThemeNight => 'Ночь';
+
+  @override
+  String get profileManageCategories => 'Категории';
+
+  @override
+  String insightStreak(int days) {
+    return 'Серия из $days дней — продолжайте в том же духе.';
+  }
+
+  @override
+  String get insightNoStreak => 'Выполните привычку, чтобы начать серию.';
+
+  @override
+  String insightStrongCategory(String category, int percent) {
+    return 'Лучше всего идёт «$category» — $percent%.';
+  }
+
+  @override
+  String insightWeakCategory(String category, int percent) {
+    return '«$category» проседает — всего $percent%.';
+  }
+
+  @override
+  String insightStrongDay(String weekday) {
+    return 'Самый продуктивный день — $weekday.';
+  }
+
+  @override
+  String insightWeakDay(String weekday) {
+    return '$weekday обычно даётся тяжелее.';
+  }
+
+  @override
+  String insightTrendUp(int percent) {
+    return 'На этой неделе на $percent% больше, чем на прошлой.';
+  }
+
+  @override
+  String insightTrendDown(int percent) {
+    return 'На этой неделе на $percent% меньше, чем на прошлой.';
+  }
+
+  @override
+  String get insightWelcome =>
+      'Добавьте первую привычку — и здесь появятся наблюдения.';
 }

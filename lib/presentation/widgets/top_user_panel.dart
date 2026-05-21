@@ -7,12 +7,12 @@ import 'package:provider/provider.dart';
 
 import '../../domain/models/entities/user.dart';
 import '../../l10n/generated/app_localizations.dart';
+import '../screens/profile_screen.dart';
 import '../state/theme_provider.dart';
 import '../state/user_view_model.dart';
 import '../theme/app_colors.dart';
 import '../theme/app_spacing.dart';
 import '../theme/app_text.dart';
-import 'avatar_picker_sheet.dart';
 
 class TopUserPanel extends StatefulWidget {
   const TopUserPanel({super.key});
@@ -238,16 +238,7 @@ class _TopUserPanelState extends State<TopUserPanel>
   // ── Gesture handlers ──────────────────────────────────────────────────────
 
   void _onAvatarTap() {
-    final colors = AppColors.of(context);
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: colors.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
-      ),
-      builder: (_) => const AvatarPickerSheet(),
-    );
+    Navigator.of(context).push(ProfileScreen.route());
   }
 
   void _onNameLongPress() {

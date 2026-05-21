@@ -316,4 +316,102 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get monthDec => 'December';
+
+  @override
+  String get profileTitle => 'Profile';
+
+  @override
+  String get profileChangeAvatar => 'Change avatar';
+
+  @override
+  String get profileTapToCustomize => 'Tap to customize';
+
+  @override
+  String get profileStatCurrentStreak => 'Current streak';
+
+  @override
+  String get profileStatCompletedToday => 'Done today';
+
+  @override
+  String get profileStatBestStreak => 'Best streak';
+
+  @override
+  String get profileSkillsTitle => 'Skills';
+
+  @override
+  String get profileSkillsSubtitle => 'Last 14 days';
+
+  @override
+  String get profileSkillsEmpty => 'Add habits to see progress here.';
+
+  @override
+  String get profileInsightsTitle => 'Insights';
+
+  @override
+  String get profileRecentTitle => 'Today';
+
+  @override
+  String get profileRecentEmpty => 'Nothing scheduled today.';
+
+  @override
+  String profileRecentDoneOf(int done, int total) {
+    return '$done of $total done';
+  }
+
+  @override
+  String get profileSettingsTitle => 'Settings';
+
+  @override
+  String get profileThemeLabel => 'Theme';
+
+  @override
+  String get profileThemeDay => 'Day';
+
+  @override
+  String get profileThemeNight => 'Night';
+
+  @override
+  String get profileManageCategories => 'Categories';
+
+  @override
+  String insightStreak(int days) {
+    return '$days-day streak — keep it going.';
+  }
+
+  @override
+  String get insightNoStreak => 'Complete a habit today to start a streak.';
+
+  @override
+  String insightStrongCategory(String category, int percent) {
+    return '$category is your strongest area — $percent%.';
+  }
+
+  @override
+  String insightWeakCategory(String category, int percent) {
+    return '$category could use some attention — only $percent%.';
+  }
+
+  @override
+  String insightStrongDay(String weekday) {
+    return '$weekday is your most consistent day.';
+  }
+
+  @override
+  String insightWeakDay(String weekday) {
+    return '$weekday tends to be harder.';
+  }
+
+  @override
+  String insightTrendUp(int percent) {
+    return 'Up $percent% from last week.';
+  }
+
+  @override
+  String insightTrendDown(int percent) {
+    return 'Down $percent% from last week.';
+  }
+
+  @override
+  String get insightWelcome =>
+      'Add your first habit — insights will appear here.';
 }

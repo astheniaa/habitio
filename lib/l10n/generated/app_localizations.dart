@@ -709,6 +709,168 @@ abstract class AppLocalizations {
   /// In ru, this message translates to:
   /// **'Декабрь'**
   String get monthDec;
+
+  /// No description provided for @profileTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Профиль'**
+  String get profileTitle;
+
+  /// No description provided for @profileChangeAvatar.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сменить аватар'**
+  String get profileChangeAvatar;
+
+  /// No description provided for @profileTapToCustomize.
+  ///
+  /// In ru, this message translates to:
+  /// **'Нажмите, чтобы настроить'**
+  String get profileTapToCustomize;
+
+  /// No description provided for @profileStatCurrentStreak.
+  ///
+  /// In ru, this message translates to:
+  /// **'Текущая серия'**
+  String get profileStatCurrentStreak;
+
+  /// No description provided for @profileStatCompletedToday.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполнено сегодня'**
+  String get profileStatCompletedToday;
+
+  /// No description provided for @profileStatBestStreak.
+  ///
+  /// In ru, this message translates to:
+  /// **'Лучшая серия'**
+  String get profileStatBestStreak;
+
+  /// No description provided for @profileSkillsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Навыки'**
+  String get profileSkillsTitle;
+
+  /// No description provided for @profileSkillsSubtitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'За последние 14 дней'**
+  String get profileSkillsSubtitle;
+
+  /// No description provided for @profileSkillsEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте привычки, чтобы видеть прогресс'**
+  String get profileSkillsEmpty;
+
+  /// No description provided for @profileInsightsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Наблюдения'**
+  String get profileInsightsTitle;
+
+  /// No description provided for @profileRecentTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Сегодня'**
+  String get profileRecentTitle;
+
+  /// No description provided for @profileRecentEmpty.
+  ///
+  /// In ru, this message translates to:
+  /// **'На сегодня привычек нет'**
+  String get profileRecentEmpty;
+
+  /// No description provided for @profileRecentDoneOf.
+  ///
+  /// In ru, this message translates to:
+  /// **'{done} из {total} выполнено'**
+  String profileRecentDoneOf(int done, int total);
+
+  /// No description provided for @profileSettingsTitle.
+  ///
+  /// In ru, this message translates to:
+  /// **'Настройки'**
+  String get profileSettingsTitle;
+
+  /// No description provided for @profileThemeLabel.
+  ///
+  /// In ru, this message translates to:
+  /// **'Тема'**
+  String get profileThemeLabel;
+
+  /// No description provided for @profileThemeDay.
+  ///
+  /// In ru, this message translates to:
+  /// **'День'**
+  String get profileThemeDay;
+
+  /// No description provided for @profileThemeNight.
+  ///
+  /// In ru, this message translates to:
+  /// **'Ночь'**
+  String get profileThemeNight;
+
+  /// No description provided for @profileManageCategories.
+  ///
+  /// In ru, this message translates to:
+  /// **'Категории'**
+  String get profileManageCategories;
+
+  /// No description provided for @insightStreak.
+  ///
+  /// In ru, this message translates to:
+  /// **'Серия из {days} дней — продолжайте в том же духе.'**
+  String insightStreak(int days);
+
+  /// No description provided for @insightNoStreak.
+  ///
+  /// In ru, this message translates to:
+  /// **'Выполните привычку, чтобы начать серию.'**
+  String get insightNoStreak;
+
+  /// No description provided for @insightStrongCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'Лучше всего идёт «{category}» — {percent}%.'**
+  String insightStrongCategory(String category, int percent);
+
+  /// No description provided for @insightWeakCategory.
+  ///
+  /// In ru, this message translates to:
+  /// **'«{category}» проседает — всего {percent}%.'**
+  String insightWeakCategory(String category, int percent);
+
+  /// No description provided for @insightStrongDay.
+  ///
+  /// In ru, this message translates to:
+  /// **'Самый продуктивный день — {weekday}.'**
+  String insightStrongDay(String weekday);
+
+  /// No description provided for @insightWeakDay.
+  ///
+  /// In ru, this message translates to:
+  /// **'{weekday} обычно даётся тяжелее.'**
+  String insightWeakDay(String weekday);
+
+  /// No description provided for @insightTrendUp.
+  ///
+  /// In ru, this message translates to:
+  /// **'На этой неделе на {percent}% больше, чем на прошлой.'**
+  String insightTrendUp(int percent);
+
+  /// No description provided for @insightTrendDown.
+  ///
+  /// In ru, this message translates to:
+  /// **'На этой неделе на {percent}% меньше, чем на прошлой.'**
+  String insightTrendDown(int percent);
+
+  /// No description provided for @insightWelcome.
+  ///
+  /// In ru, this message translates to:
+  /// **'Добавьте первую привычку — и здесь появятся наблюдения.'**
+  String get insightWelcome;
 }
 
 class _AppLocalizationsDelegate
